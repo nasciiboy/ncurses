@@ -20,6 +20,7 @@ void init_screen(){
   noecho();
   keypad( stdscr, TRUE );
   cbreak();
+  curs_set( FALSE );
 }
 
 void restore_screen(){
@@ -172,7 +173,34 @@ void rotate_brick( char mtx_brick[4][4], char board[BOARD_HEIGHT][BOARD_WIDTH],
         tmp_brick[i][ii] = mtx_brick[ii][3 - i];
   }
 
+  adjust_brick( tmp_brick );
+
   if( !check_brick( tmp_brick, board, *y, *x ) )
+  memcpy( mtx_brick, tmp_brick, sizeof(char) * 4 * 4);
+}
+
+void adjust_brick( char mtx_brick[4][4] ){
+  char tmp_brick[4][4];
+  memset( tmp_brick, 0, sizeof(char) * 4 * 4 );
+  int i, ii;
+  int ti = 0;
+  int tii = 4;
+  bool change;
+  for( i = 0; i < 4; i++)
+    for( ii = 0; ii < 4; ii++)
+      if( mtx_brick[i][ii] )
+        if( ii < tii ) tii = ii;
+
+  for( i = 0; i < 4; i++){
+    change = false;
+    for( ii = 0; ii < 4; ii++)
+      if( mtx_brick[i][ii] ){
+        tmp_brick[ti][ii - tii] = mtx_brick[i][ii];
+        change = true;
+      }
+    if( change ) ti++;
+  }
+
   memcpy( mtx_brick, tmp_brick, sizeof(char) * 4 * 4);
 }
 

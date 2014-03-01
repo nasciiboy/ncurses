@@ -25,6 +25,7 @@ void show_board( WINDOW* win, char board[BOARD_HEIGHT][BOARD_WIDTH] );
 void get_brick( char brick, char mtx_brick[4][4] );
 void rotate_brick( char mtx_brick[4][4], char board[BOARD_HEIGHT][BOARD_WIDTH],
                    char* y, char* x, bool dir );
+void adjust_brick( char mtx_brick[4][4] );
 int check_brick( char mtx_brick[4][4], char board[BOARD_HEIGHT][BOARD_WIDTH],
                  char y, char x );
 void move_brick( WINDOW* win, char board[BOARD_HEIGHT][BOARD_WIDTH], char mtx_brick[4][4],
