@@ -28,7 +28,6 @@
 #define POINTS_MONEY     100
 #define NUM_BOMBPK       3
 
-enum MV { NONE, DOWN, UP, LEFT, RIGHT };
 
 ///////////////////// COLOR - PAIR /////////////////////////////////////////
 enum CK {  BB = 1, BR, BG, BY, BX, BM, BC, BW,              // BLACK    B //

@@ -7,6 +7,16 @@
 #include <ctype.h> // tolower
 #include <ncurses.h>
 
+/*
+                     ---   -Z-   ---    ---     ---     ---    Z--    --Z
+                     -x-   -x-   Zx-    -xZ     -x-     -x-    -x-    -x-
+                     -Z-   ---   ---    ---     Z--     --Z    ---    ---
+*/
+enum      MV      { DOWN,   UP, LEFT, RIGHT, DOWN_L, DOWN_R,  UP_L,  UP_R, MAX_MV };
+const int dx[8] = {    0,    0,   -1,     1,     -1,      1,    -1,     1         };
+const int dy[8] = {    1,   -1,    0,     0,      1,      1,    -1,    -1         };
+
+
 int lives; 
 int bombs;
 int score;
@@ -41,94 +51,85 @@ void kill_player( char map[MAP_HSIZE][MAP_WSIZE], int y, int x ){
 }
 
 int move_obj( char map[MAP_HSIZE][MAP_WSIZE], int obj, int y, int x, int move ){
-  char tmp_obj;
-  switch( move ){
-  case UP   : tmp_obj = map[ y - 1 ][ x     ]; break;
-  case DOWN : tmp_obj = map[ y + 1 ][ x     ]; break;
-  case LEFT : tmp_obj = map[ y     ][ x - 1 ]; break;
-  case RIGHT: tmp_obj = map[ y     ][ x + 1 ]; break;
-  }
+  int iy = y + dy[ move ];
+  int ix = x + dx[ move ];
+  if( ix >= 0 && iy >= 0 && ix < MAP_WSIZE && iy <  MAP_HSIZE ){
+    char tmp_obj;
+    tmp_obj = map[ iy ][ ix ];
 
-  if( tmp_obj == EMPTY ){
-    switch( move ){
-    case UP   : map[ y ][ x ] = EMPTY; y--; break;
-    case DOWN : map[ y ][ x ] = EMPTY; y++; break;
-    case LEFT : map[ y ][ x ] = EMPTY; x--; break;
-    case RIGHT: map[ y ][ x ] = EMPTY; x++; break;
-    }
-    map[ y ][ x ] = obj;
-    return 1;
+    if( tmp_obj == EMPTY ){
+      switch( move ){
+      case UP   : map[ y ][ x ] = EMPTY; y--; break;
+      case DOWN : map[ y ][ x ] = EMPTY; y++; break;
+      case LEFT : map[ y ][ x ] = EMPTY; x--; break;
+      case RIGHT: map[ y ][ x ] = EMPTY; x++; break;
+      }
+      map[ y ][ x ] = obj;
+      return 1;
+    } else return 0;
   } else return 0;
 }
 
 int move_player( char map[MAP_HSIZE][MAP_WSIZE], int* y, int* x, int move ){
-  char obj;
-  int ox, oy;
-  switch( move ){
-  case UP   : obj = map[ oy = *y - 1 ][ ox = *x     ]; break;
-  case DOWN : obj = map[ oy = *y + 1 ][ ox = *x     ]; break;
-  case LEFT : obj = map[ oy = *y     ][ ox = *x - 1 ]; break;
-  case RIGHT: obj = map[ oy = *y     ][ ox = *x + 1 ]; break;
-  }
+  int iy = *y + dy[ move ];
+  int ix = *x + dx[ move ];
+  if( ix >= 0 && iy >= 0 && ix < MAP_WSIZE && iy < MAP_HSIZE ){
+    char obj = map[ iy ][ ix ];
 
-  if( obj == MONSTER ){
-    kill_player( map, *y, *x );
-    return 0;
-  }
+    if( obj == MONSTER ){
+      kill_player( map, *y, *x );
+      return 0;
+    }
 
-  if( obj == STONE || obj == BOMB ){
-    if( move_obj( map, obj, oy, ox, move ) ){
-      switch( move ){
-      case UP   : map[ *y ][ *x ] = EMPTY; (*y)--; break;
-      case DOWN : map[ *y ][ *x ] = EMPTY; (*y)++; break;
-      case LEFT : map[ *y ][ *x ] = EMPTY; (*x)--; break;
-      case RIGHT: map[ *y ][ *x ] = EMPTY; (*x)++; break;
-      }
+    if( obj == STONE || obj == BOMB ){
+      if( move_obj( map, obj, iy, ix, move ) ){
+        map[ *y ][ *x ] = EMPTY;
+        *y += dy[ move ];
+        *x += dx[ move ];
+        map[ *y ][ *x ] = PLAYER;
+        return 1;
+      } else return 0;
+    }
+
+    if( obj == EMPTY || obj == DIRT || obj == DIAMOND || obj == MONEY || obj == BOMBPK ){
+      map[ *y ][ *x ] = EMPTY;
+      *y += dy[ move ];
+      *x += dx[ move ];
       map[ *y ][ *x ] = PLAYER;
+      if( obj == MONEY   )  score += POINTS_MONEY  ;
+      if( obj == DIAMOND ){ score += POINTS_DIAMOND; diamonds--; }
+      if( obj == BOMBPK  )  bombs += NUM_BOMBPK    ;
       return 1;
     } else return 0;
-  }
-
-  if( obj == EMPTY || obj == DIRT || obj == DIAMOND || obj == MONEY || obj == BOMBPK ){
-    switch( move ){
-    case UP   : map[ *y ][ *x ] = EMPTY; (*y)--; break;
-    case DOWN : map[ *y ][ *x ] = EMPTY; (*y)++; break;
-    case LEFT : map[ *y ][ *x ] = EMPTY; (*x)--; break;
-    case RIGHT: map[ *y ][ *x ] = EMPTY; (*x)++; break;
-    }
-    if( obj == MONEY   )  score += POINTS_MONEY  ;
-    if( obj == DIAMOND ){ score += POINTS_DIAMOND; diamonds--; }
-    if( obj == BOMBPK  )  bombs += NUM_BOMBPK    ;
-
-    map[ *y ][ *x ] = PLAYER;
-    return 1;
   } else return 0;
 }
 
 int gravity( char map[MAP_HSIZE][MAP_WSIZE], int* new_bomb ){
   int i, ii;
   char current, down, down_l, down_r, m_down, m_down_l, m_down_r, left, right;
-  for( i = MAP_HSIZE - 1; i >= 0; i-- )
+  for( i = MAP_HSIZE - 2; i >= 0; i-- )
     for( ii = 0; ii < MAP_WSIZE; ii++ ){
-      if( i == MAP_HSIZE - 1 ){
-        current   = map[i][ii    ];
-        down      =              0;
-        down_l    =              0;
-        down_r    =              0;
-        m_down    =              0;
-        m_down_l  =              0;
-        m_down_r  =              0;
-        if( ii == 0 ){
-          right   = map[i][ii + 1];
-          left    =              0;
-        } else if( ii == MAP_WSIZE - 1 ){
-          left    = map[i][ii - 1];
-          right   =              0;
-        } else {
-          left    = map[i][ii - 1];
-          right   = map[i][ii + 1];
-        }
-      } else if( i == MAP_HSIZE - 2 ){
+      // if( i == MAP_HSIZE - 1 ){
+      //   current   = map[i][ii    ];
+      //   down      =              0;
+      //   down_l    =              0;
+      //   down_r    =              0;
+      //   m_down    =              0;
+      //   m_down_l  =              0;
+      //   m_down_r  =              0;
+      //   if( ii == 0 ){
+      //     right   = map[i][ii + 1];
+      //     left    =              0;
+      //   } else 
+      //     if( ii == MAP_WSIZE - 1 ){
+      //     left    = map[i][ii - 1];
+      //     right   =              0;
+      //   } else {
+      //     left    = map[i][ii - 1];
+      //     right   = map[i][ii + 1];
+      //   }
+      // } else
+      if( i == MAP_HSIZE - 2 ){
         current   = map[i    ][ii    ];
         down      = map[i + 1][ii    ];
         m_down    =                  0;
@@ -264,42 +265,29 @@ int kaboom( char map[MAP_HSIZE][MAP_WSIZE] ){
   req.tv_sec = 0;
   req.tv_nsec = 50000000;
   int die = 0;
-  int i, ii;
-  char ch;
+  int i, ii, move;
+  int iy, ix;
+  char obj;
   for(i = 0; i < MAP_HSIZE; i++)
     for(ii = 0; ii < MAP_WSIZE; ii++){
-      ch = map[i][ii];
-      if( ch == BOMB ){
+      if( map[i][ii] == BOMB ){
         map[i][ii] = EMPTY;
-        if( change_chmap( map, i    , ii - 1, EMPTY, STONE ) == PLAYER ) die = 1;
-        if( change_chmap( map, i    , ii + 1, EMPTY, STONE ) == PLAYER ) die = 1;
-        if( change_chmap( map, i + 1, ii    , EMPTY, STONE ) == PLAYER ) die = 1;
-        if( change_chmap( map, i - 1, ii    , EMPTY, STONE ) == PLAYER ) die = 1;
-        if( change_chmap( map, i + 1, ii - 1, EMPTY, STONE ) == PLAYER ) die = 1;
-        if( change_chmap( map, i + 1, ii + 1, EMPTY, STONE ) == PLAYER ) die = 1;
-        if( change_chmap( map, i - 1, ii - 1, EMPTY, STONE ) == PLAYER ) die = 1;
-        if( change_chmap( map, i - 1, ii + 1, EMPTY, STONE ) == PLAYER ) die = 1;
-        if( change_chmap( map, i    , ii - 1, EMPTY, DIRT  ) == PLAYER ) die = 1;
-        if( change_chmap( map, i    , ii + 1, EMPTY, DIRT  ) == PLAYER ) die = 1;
-        if( change_chmap( map, i + 1, ii    , EMPTY, DIRT  ) == PLAYER ) die = 1;
-        if( change_chmap( map, i - 1, ii    , EMPTY, DIRT  ) == PLAYER ) die = 1;
-        if( change_chmap( map, i + 1, ii - 1, EMPTY, DIRT  ) == PLAYER ) die = 1;
-        if( change_chmap( map, i + 1, ii + 1, EMPTY, DIRT  ) == PLAYER ) die = 1;
-        if( change_chmap( map, i - 1, ii - 1, EMPTY, DIRT  ) == PLAYER ) die = 1;
-        if( change_chmap( map, i - 1, ii + 1, EMPTY, DIRT  ) == PLAYER ) die = 1;
-        change_chmap( map, i    , ii - 1, EMPTY, MONSTER );
-        change_chmap( map, i    , ii + 1, EMPTY, MONSTER );
-        change_chmap( map, i + 1, ii    , EMPTY, MONSTER );
-        change_chmap( map, i - 1, ii    , EMPTY, MONSTER );
-        change_chmap( map, i + 1, ii - 1, EMPTY, MONSTER );
-        change_chmap( map, i + 1, ii + 1, EMPTY, MONSTER );
-        change_chmap( map, i - 1, ii - 1, EMPTY, MONSTER );
-        change_chmap( map, i - 1, ii + 1, EMPTY, MONSTER );
+        for( move = 0; move < MAX_MV; move++ ){
+          iy =  i + dy[ move ];
+          ix = ii + dx[ move ];
+          if( ix >= 0 && iy >= 0 && ix < MAP_WSIZE && iy <  MAP_HSIZE ){
+            obj = map[iy][ix];
+            if( obj == DIRT || obj == STONE || obj == MONSTER ) map[iy][ix] = EMPTY;
+            if( obj == PLAYER ) die = 1;
+          }
+        }    // for move
+
         draw_map( map, MAP_Y, MAP_X );
         refresh();
         nanosleep( &req, 0 );
-      }
-    }
+      }      // if  map == BOMB
+    }        // for MAP_WSIZE
+
   flushinp();
   return die;
 }
