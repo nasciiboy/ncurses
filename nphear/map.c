@@ -64,24 +64,6 @@ void draw_map( char map[MAP_HSIZE][MAP_WSIZE], int y, int x ){
 
 }
 
-void draw_chmap( WINDOW* win, int y, int x, int ch ){
-  if( win == 0 ) win = stdscr;
-  switch( ch ){
-  case EMPTY  :mvwaddch( win, y + MAP_Y, x + MAP_X, EMPTY  |COLOR_PAIR( WB )           );break;
-  case DIRT   :mvwaddch( win, y + MAP_Y, x + MAP_X, DIRT   |COLOR_PAIR( RB )| A_NORMAL );break;
-  case STONE  :mvwaddch( win, y + MAP_Y, x + MAP_X, STONE  |COLOR_PAIR( WB )| A_NORMAL );break;
-  case DIAMOND:mvwaddch( win, y + MAP_Y, x + MAP_X, DIAMOND|COLOR_PAIR( YB )| A_BOLD   );break;
-  case WALL   :mvwaddch( win, y + MAP_Y, x + MAP_X, WALL   |COLOR_PAIR( CB )| A_NORMAL );break;
-  case MONEY  :mvwaddch( win, y + MAP_Y, x + MAP_X, MONEY  |COLOR_PAIR( GB )| A_NORMAL );break;
-  case PLAYER :mvwaddch( win, y + MAP_Y, x + MAP_X, PLAYER |COLOR_PAIR( WB )| A_BOLD   );break;
-  case BOMB   :mvwaddch( win, y + MAP_Y, x + MAP_X, BOMB   |COLOR_PAIR( XB )| A_BOLD   );break;
-  case BOMBPK :mvwaddch( win, y + MAP_Y, x + MAP_X, BOMBPK |COLOR_PAIR( XB )| A_BOLD   );break;
-  case MONSTER:mvwaddch( win, y + MAP_Y, x + MAP_X, MONSTER|COLOR_PAIR( MB )| A_BOLD   );break;
-  case BLOOD  :mvwaddch( win, y + MAP_Y, x + MAP_X, BLOOD  |COLOR_PAIR( YB )| A_BOLD   );break;
-  default     :mvwaddch( win, y + MAP_Y, x + MAP_X, '?'                                );break;
-  }
-}
-
 int change_chmap( char map[MAP_HSIZE][MAP_WSIZE], int y, int x, int nw, int prew ){
   if( x >= 0 && y >= 0 && x < MAP_WSIZE && y <  MAP_HSIZE ){
     char ch = map[y][x];

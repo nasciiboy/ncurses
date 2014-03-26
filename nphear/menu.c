@@ -21,7 +21,7 @@ int menu(){
   attrset( COLOR_PAIR( RB ) | A_BOLD );
   draw_file( stdscr, "data/htext", 1, 20 );
   attrset( COLOR_PAIR( RB ) );
-  mvprintw( 4, MAP_WSIZE - strlen( VERSION ), "%s", VERSION );
+  mvprintw( 4, 80 - strlen( VERSION ), "%s", VERSION );
 
   attrset( COLOR_PAIR( GB ) );
   draw_file( stdscr, "data/tdesc", 9, 42 );
@@ -29,13 +29,14 @@ int menu(){
   int i;
   attrset( COLOR_PAIR( CB ) );
   for( i = 0; i < MAP_WSIZE; i++) {
-    mvaddch(MAP_HSIZE - 1, i, ':');
-    mvaddch(0, i, ':');
+    mvaddch( 22, i, ':');
+    mvaddch(  0, i, ':');
   }
 
   attrset( COLOR_PAIR( MB ) );
-  mvprintw(MAP_HSIZE, 0, "CAVEZ of PHEAR Copyright 2003-2007 Tom Rune Flo <tom@x86.no>");
-  mvprintw(MAP_HSIZE + 1, 0, "Distributed under the terms of the GPL license");
+  mvprintw(  23,  0, "CAVEZ of PHEAR Copyright 2003-2007 Tom Rune Flo <tom@x86.no>");
+  mvprintw(  23, 62, "(mod by nasciiboy)");
+  mvprintw(  24,  0, "Distributed under the terms of the GPL license");
 
   refresh();
   timespec req;

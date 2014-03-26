@@ -1,7 +1,8 @@
 #include "editor.h"
-#include "map.h"
-#include <time.h>
 #include "utils.h"
+#include "map.h"
+
+#include <time.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -58,7 +59,7 @@ int load_elevel( char map[MAP_HSIZE][MAP_WSIZE], int elevel, int* y, int* x ){
     char file[30];
     sprintf( file, "data/levels/%02i", elevel );
     if( !load_map( file, map ) ){
-      mvprintw( 15, 42, "no-load" );
+      msgbox( "no-load" );
       return 0;
     } else {
       *y = MAP_HSIZE / 2;
@@ -74,11 +75,12 @@ void ehelp(){
   WINDOW* helpwin = newwin( 20, 50, (GLOBAL_HEIGHT - 20)/2, (GLOBAL_WIDTH - 50) / 2 );
   wbkgd( helpwin, COLOR_PAIR( YB ) );
   box( helpwin, 0, 0 );
-  mvwaddstr( helpwin,  1, 1, "asx cjnchkjsd sdkjcnsd" ); 
-  mvwaddstr( helpwin, 11, 1, "asx cjnchkjsd sdkjcnsd" ); 
-  mvwaddstr( helpwin, 17, 1, "asx cjnchkjsd sdkjcnsd" ); 
-  mvwaddstr( helpwin,  8, 1, "asx cjnchkjsd sdkjcnsd" ); 
-  mvwaddstr( helpwin,  7, 1, "asx cjnchkjsd sdkjcnsd" ); 
+  print_in_middle( helpwin, 3, "MENU" );
+  mvwaddstr( helpwin, 5, 5, "0  -  9   --> SET OBJ" ); 
+  mvwaddstr( helpwin, 6, 5, "   l      --> DRAWN LOCK ON/OFF" ); 
+  mvwaddstr( helpwin, 7, 5, "   h      --> HELP" ); 
+  mvwaddstr( helpwin, 8, 5, "   s      --> SAVE" ); 
+  mvwaddstr( helpwin, 9, 5, "q  - ESC  --> MENU" ); 
   wrefresh( helpwin );
   nodelay( stdscr, FALSE );
   getch();
@@ -88,57 +90,50 @@ void ehelp(){
 }
 
 void draw_status(int obj, int lock ){
-  attrset(COLOR_PAIR(GB));
-  mvprintw(0, 5, "CAVEZ of PHEAR "VERSION" EDITOR");
-
-  attrset(COLOR_PAIR(MB));
-  mvprintw( 24, 0, "0 EMPTY  1 #  2 O  3 *  4 :  5 $  6 @  7 %  8 M  9 Z  "
-            "   l LOCK ON/OFF s SAVE  q QUIT");
-
-  attrset(COLOR_PAIR(MB) | A_NORMAL);
-  mvprintw(0, 60, "OBJECT:");
-
   draw_chwin( stdscr, 0, 68, obj );
 
-  attrset(COLOR_PAIR(COLOR_MAGENTA) | A_NORMAL);
-  mvprintw(0, 71, "LOCK:");
-
   if(lock == -1) {
-    attrset(COLOR_PAIR(COLOR_WHITE) | A_NORMAL);
+    attrset(COLOR_PAIR(WG) | A_NORMAL);
     mvprintw(0, 77, "OFF");
-    mvprintw(24, 62, "OFF");
-  }
-  if(lock == 1 ) {
-    attrset(COLOR_PAIR(COLOR_WHITE) | A_BOLD);
+  } else {
+    attrset(COLOR_PAIR(WR) | A_BOLD);
     mvprintw(0, 77, "ON ");
-    mvprintw(24, 59, "ON");
   }
-
-  // attrset(COLOR_PAIR(COLOR_MAGENTA));
-  // mvprintw(0, 0, "*: %d $: %d SCORE: %d   ", count_object(MAP_DIAMOND), 
-  // count_object(MAP_MONEY), (count_object(MAP_DIAMOND) * POINTS_DIAMOND) + 
-  // (count_object(MAP_MONEY) * POINTS_MONEY));
 
   attrset(A_NORMAL);
 }
 
 int editor( int elevel ){
-  erase();
+  int lock = -1;
+  char obj = EMPTY;
   int level = elevel;
   int curs_x, curs_y;
   char map[MAP_HSIZE][MAP_WSIZE];
-  load_elevel( map, level, &curs_y, &curs_x );
-  curs_set( TRUE );
 
-  int lock = -1;
-  char obj = EMPTY;
+  erase();
+
+  attrset(COLOR_PAIR(GB));
+  mvprintw(0, 5, "CAVEZ of PHEAR "VERSION );
+  attrset(COLOR_PAIR(WB));
+  mvprintw(0, 35, "EDITOR" );
+  attrset(COLOR_PAIR(CB));
+  mvprintw( 24, 2, "0(EMPTY) 1(#) 2(O) 3(*) 4(:) 5($) 6(@) 7(%) 8(M) 9(Z)" );
+  attrset(COLOR_PAIR(WB));
+  mvprintw( 24, 60, "h(HELP) q(QUIT)" );
+  attrset(COLOR_PAIR(MB) | A_NORMAL);
+  mvprintw(0, 60, "OBJECT:");
+  attrset(COLOR_PAIR(COLOR_MAGENTA) | A_NORMAL);
+  mvprintw(0, 71, "LOCK:");
+  attrset(A_NORMAL);
+
+  curs_set( TRUE );
+  nodelay( stdscr, TRUE );
+
+  load_elevel( map, level, &curs_y, &curs_x );
 
   int run = 1;
-  int ch;
-  nodelay( stdscr, TRUE );
   while( run ){
-    ch = tolower( getch() );
-    switch( ch ){
+    switch( tolower( getch() ) ){
 
     case KEY_UP   : curs_y--      ; break;
     case KEY_DOWN : curs_y++      ; break;

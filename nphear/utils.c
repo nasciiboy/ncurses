@@ -1,7 +1,6 @@
 #include "utils.h"
 #include "common.h"
 
-#include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -183,4 +182,16 @@ int msgbox( const char* msg ){
     delwin( msgwin );
     return 0;
   }
+}
+
+void print_in_middle( WINDOW* win, int starty, const char* msg ){
+  int width, x, y;
+
+  if( win == 0 ) win = stdscr;
+  if( starty == 0 ) y = getmaxy( win ) / 2;
+  else y = starty;
+
+  width = getmaxx( win );
+  x = ( width - strlen( msg ) ) / 2;
+  mvwprintw( win, y, x, "%s", msg );
 }
