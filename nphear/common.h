@@ -40,5 +40,24 @@ enum CK {  BB = 1, BR, BG, BY, BX, BM, BC, BW,              // BLACK    B //
                WB, WR, WG, WY, WX, WM, WC, WW, CKMAX };     // WHITE    W //
 ////////////////////////////////////////////////////////////////////////////
 
+/*
+                      ---   -Z-   ---   ---     ---   --Z    Z--     ---
+                      -xZ   -x-   Zx-   -x-     -x-   -x-    -x-     -x-
+                      ---   ---   ---   -Z-     --Z   ---    ---     Z--
+*/
+enum      MV      { RIGHT,   UP, LEFT, DOWN, DOWN_R, UP_R,  UP_L, DOWN_L, MAX_MV };
+const int dx[8] = {     1,    0,   -1,    0,      1,    1,    -1,     -1          };
+const int dy[8] = {     0,   -1,    0,    1,      1,   -1,    -1,      1          };
+
+typedef struct {
+  int y, x;
+} gps;
+
+typedef struct {
+  int lives;
+  int score;
+  int diamonds;
+  int bombs;
+} LSDB;
 
 #endif  // COMMON_H

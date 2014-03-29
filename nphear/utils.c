@@ -31,6 +31,14 @@ void start_ck(){
   }
 }
 
+void clrscr(){
+  int i, ii, maxy, maxx;
+  getmaxyx(stdscr, maxy, maxx);
+  for( i = 0; i < maxy; i++)
+    for( ii = 0; ii < maxx; ii++)
+      mvaddch( i, ii, ' ');
+}
+
 /* para cambiar el color fg llame previamente a attron() con COLOR_BLACK como
    color bg, o bien a bkgd para cualquier combinacion de color */
 void nasciiboy(){

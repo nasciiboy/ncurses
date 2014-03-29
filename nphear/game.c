@@ -1,37 +1,29 @@
 #include "file.h"
 #include "map.h"
 #include "utils.h"
+#include "pathfinding.h"
 
 #include <time.h>
 #include <string.h>
 #include <ctype.h> // tolower
 #include <ncurses.h>
 
-/*
-                     ---   -Z-   ---    ---     ---     ---    Z--    --Z
-                     -x-   -x-   Zx-    -xZ     -x-     -x-    -x-    -x-
-                     -Z-   ---   ---    ---     Z--     --Z    ---    ---
-*/
-enum      MV      { DOWN,   UP, LEFT, RIGHT, DOWN_L, DOWN_R,  UP_L,  UP_R, MAX_MV };
-const int dx[8] = {    0,    0,   -1,     1,     -1,      1,    -1,     1         };
-const int dy[8] = {    1,   -1,    0,     0,      1,      1,    -1,    -1         };
-
-void kill_player( char map[MAP_HSIZE][MAP_WSIZE], int y, int x ){
-  map[y][x] = BLOOD;
+void kill_player( char map[MAP_HSIZE][MAP_WSIZE], gps player ){
+  map[ player.y ][ player.x ] = BLOOD;
   timespec req;
     req.tv_sec = 0;
     req.tv_nsec = 400000000;
 
   int i;
   for( i = 1; i < 3; i++ ){
-    change_chmap( map, y    , x - i, BLOOD, 0    );  //   +
-    change_chmap( map, y    , x + i, BLOOD, 0    );  //  +Z+
-    change_chmap( map, y - i, x    , BLOOD, 0    );  //   + 
-    change_chmap( map, y + i, x    , BLOOD, 0    );
-    change_chmap( map, y - i, x - i, BLOOD, DIRT );  //  + +
-    change_chmap( map, y - i, x + i, BLOOD, DIRT );  //   Z
-    change_chmap( map, y + i, x - i, BLOOD, DIRT );  //  + +
-    change_chmap( map, y + i, x + i, BLOOD, DIRT );
+    change_chmap( map, player.y    , player.x - i, BLOOD, 0    );  //   +
+    change_chmap( map, player.y    , player.x + i, BLOOD, 0    );  //  +Z+
+    change_chmap( map, player.y - i, player.x    , BLOOD, 0    );  //   + 
+    change_chmap( map, player.y + i, player.x    , BLOOD, 0    );
+    change_chmap( map, player.y - i, player.x - i, BLOOD, DIRT );  //  + +
+    change_chmap( map, player.y - i, player.x + i, BLOOD, DIRT );  //   Z
+    change_chmap( map, player.y + i, player.x - i, BLOOD, DIRT );  //  + +
+    change_chmap( map, player.y + i, player.x + i, BLOOD, DIRT );
     draw_map( map, MAP_Y, MAP_X );
     refresh();
     nanosleep( &req, 0 );
@@ -60,37 +52,36 @@ int move_obj( char map[MAP_HSIZE][MAP_WSIZE], int obj, int y, int x, int move ){
   } else return 0;
 }
 
-int move_player( char map[MAP_HSIZE][MAP_WSIZE], int* y, int* x, int move,
-                 int* score, int* diamonds, int* bombs ){
-  int iy = *y + dy[ move ];
-  int ix = *x + dx[ move ];
-  if( ix >= 0 && iy >= 0 && ix < MAP_WSIZE && iy < MAP_HSIZE ){
-    char obj = map[ iy ][ ix ];
+int move_player( char map[MAP_HSIZE][MAP_WSIZE], gps* player, int move, LSDB* lsdb ){
+  int iy = player->y + dy[ move ];
+  int ix = player->x + dx[ move ];
+  if( ix < 0 || iy < 0 || ix >= MAP_WSIZE || iy >= MAP_HSIZE ) return 0;
 
-    if( obj == MONSTER ){
-      return -1;
-    }
+  char obj = map[ iy ][ ix ];
 
-    if( obj == STONE || obj == BOMB ){
-      if( move_obj( map, obj, iy, ix, move ) ){
-        map[ *y ][ *x ] = EMPTY;
-        *y += dy[ move ];
-        *x += dx[ move ];
-        map[ *y ][ *x ] = PLAYER;
-        return 1;
-      } else return 0;
-    }
+  if( obj == MONSTER ){
+    return -1;
+  }
 
-    if( obj == EMPTY || obj == DIRT || obj == DIAMOND || obj == MONEY || obj == BOMBPK ){
-      map[ *y ][ *x ] = EMPTY;
-      *y += dy[ move ];
-      *x += dx[ move ];
-      map[ *y ][ *x ] = PLAYER;
-      if( obj == MONEY   )  *score += POINTS_MONEY  ;
-      if( obj == DIAMOND ){ *score += POINTS_DIAMOND; (*diamonds)--; }
-      if( obj == BOMBPK  )  *bombs += NUM_BOMBPK    ;
+  if( obj == STONE || obj == BOMB ){
+    if( move_obj( map, obj, iy, ix, move ) ){
+      map[ player->y ][ player->x ] = EMPTY;
+      player->y += dy[ move ];
+      player->x += dx[ move ];
+      map[ player->y ][ player->x ] = PLAYER;
       return 1;
     } else return 0;
+  }
+
+  if( obj == EMPTY || obj == DIRT || obj == DIAMOND || obj == MONEY || obj == BOMBPK ){
+    map[ player->y ][ player->x ] = EMPTY;
+    player->y += dy[ move ];
+    player->x += dx[ move ];
+    map[ player->y ][ player->x ] = PLAYER;
+    if( obj == MONEY   )  lsdb->score += POINTS_MONEY  ;
+    if( obj == DIAMOND ){ lsdb->score += POINTS_DIAMOND; (lsdb->diamonds)--; }
+    if( obj == BOMBPK  )  lsdb->bombs += NUM_BOMBPK    ;
+    return 1;
   } else return 0;
 }
 
@@ -173,7 +164,7 @@ int gravity( char map[MAP_HSIZE][MAP_WSIZE], int* new_bomb ){
 
       if( ( current == STONE || current == DIAMOND || current == MONEY ||
             current == BOMBPK || current == BOMB || current == BLOOD )
-          && down == EMPTY ){
+          && ( down == EMPTY || down == MONSTER ) ){
         if( *new_bomb ) *new_bomb = 0;
         else map[i][ii] = EMPTY;
         map[i + 1][ii] = current;
@@ -202,30 +193,29 @@ int gravity( char map[MAP_HSIZE][MAP_WSIZE], int* new_bomb ){
   return die;
 }
 
-void draw_all( char map[MAP_HSIZE][MAP_WSIZE], int delay,
-               int lives, int score, int diamonds, int bombs ){
+void draw_all( char map[MAP_HSIZE][MAP_WSIZE], int delay, LSDB lsdb ){
   if( delay ){
     timespec req;
     req.tv_sec = 0;
     req.tv_nsec = delay;
     nanosleep( &req, 0 );
     draw_map( map, MAP_Y, MAP_X );
-    mvprintw( 0,  1, "diamonds %2i", diamonds );
-    mvprintw( 0, 15, "score %2i", score );
-    mvprintw( 0, 30, "lives %2i", lives );
-    mvprintw( 0, 45, "bombs %2i", bombs );
+    mvprintw( 0,  1, "diamonds %2i", lsdb.diamonds );
+    mvprintw( 0, 15, "score %2i"   , lsdb.score );
+    mvprintw( 0, 30, "lives %2i"   , lsdb.lives );
+    mvprintw( 0, 45, "bombs %2i"   , lsdb.bombs );
     refresh();
   } else {
     draw_map( map, MAP_Y, MAP_X );
-    mvprintw( 0,  1, "diamonds %2i", diamonds );
-    mvprintw( 0, 15, "score %2i", score );
-    mvprintw( 0, 30, "lives %2i", lives );
-    mvprintw( 0, 45, "bombs %2i", bombs );
+    mvprintw( 0,  1, "diamonds %2i", lsdb.diamonds );
+    mvprintw( 0, 15, "score %2i"   , lsdb.score );
+    mvprintw( 0, 30, "lives %2i"   , lsdb.lives );
+    mvprintw( 0, 45, "bombs %2i"   , lsdb.bombs );
     refresh();
   }
 }
 
-int load_level( char map[MAP_HSIZE][MAP_WSIZE], int nlevel, int* y, int* x, int* diamonds ){
+int load_level( char map[MAP_HSIZE][MAP_WSIZE], int nlevel, gps* player, int* diamonds ){
   *diamonds = 0;
   if( nlevel >= 1 && nlevel <= 11 ){
     char file[30];
@@ -240,8 +230,8 @@ int load_level( char map[MAP_HSIZE][MAP_WSIZE], int nlevel, int* y, int* x, int*
       for(ii = 0; ii < MAP_WSIZE; ii++){
         if( map[i][ii] == DIAMOND ) (*diamonds)++;
         if( map[i][ii] == PLAYER ){ 
-          *y = i;
-          *x = ii;
+          player->y = i;
+          player->x = ii;
         }
       }
 
@@ -267,7 +257,7 @@ int kaboom( char map[MAP_HSIZE][MAP_WSIZE] ){
           if( ix >= 0 && iy >= 0 && ix < MAP_WSIZE && iy <  MAP_HSIZE ){
             obj = map[iy][ix];
             if( obj == DIRT || obj == STONE || obj == MONSTER ) map[iy][ix] = EMPTY;
-            if( obj == PLAYER ) die = -1;
+            if( obj == PLAYER ) die = 1;
           }
         }    // for move
 
@@ -281,75 +271,41 @@ int kaboom( char map[MAP_HSIZE][MAP_WSIZE] ){
   return die;
 }
 
-int do_the_monster_dance( char map[MAP_HSIZE][MAP_WSIZE], int y, int x ) {
-  int die = 0;
-  char tmp_map[MAP_HSIZE][MAP_WSIZE];
-  memset( tmp_map, EMPTY, sizeof( char ) * MAP_HSIZE * MAP_WSIZE );
-  int iy, ix;
-  for( iy = MAP_HSIZE - 1; iy >= 0; iy-- )
-    for( ix = MAP_WSIZE - 1; ix >= 0; ix-- )
-      if( map[ iy ][ ix ] == MONSTER ){
-        if( x > ix )
-          if( (map[iy][ix+1] == EMPTY ) && (tmp_map[iy][ix+1] == EMPTY ) ) {
-            map[iy][ix] = EMPTY;
-            tmp_map[iy][ix+1] = MONSTER;
-          }
-        if( map[iy][ix+1] == PLAYER ) die = 1;
-      }
-  for( iy = 0; iy < MAP_HSIZE; iy++ )
-    for( ix = 0; ix < MAP_WSIZE; ix++ )
-      if( tmp_map[ iy ][ ix ] == MONSTER )
-        map[ iy ][ ix ] = MONSTER;
-  memset( tmp_map, EMPTY, sizeof( char ) * MAP_HSIZE * MAP_WSIZE );
+int do_the_monster_dance( char map[MAP_HSIZE][MAP_WSIZE], gps player ) {
+  char IO_map[MAP_HSIZE][MAP_WSIZE];
+  memset( IO_map, 1, sizeof(char) * MAP_HSIZE * MAP_WSIZE );
+  char monster_map[MAP_HSIZE][MAP_WSIZE];
+  memset( monster_map, 0, sizeof(char) * MAP_HSIZE * MAP_WSIZE );
 
-  for( iy = MAP_HSIZE - 1; iy >= 0; iy-- )
-    for( ix = MAP_WSIZE - 1; ix >= 0; ix-- )
-      if( map[ iy ][ ix ] == MONSTER ){
-        if( y > iy )
-          if( (map[iy+1][ix] == EMPTY ) && (tmp_map[iy+1][ix] == EMPTY )) {
-            map[iy][ix] = EMPTY;
-            tmp_map[iy+1][ix] = MONSTER;
-          }
-        if( map[iy+1][ix] == PLAYER ) die = 1;
-      }
-  for( iy = 0; iy < MAP_HSIZE; iy++ )
+  int iy, ix; 
+  for( iy = 0; iy < MAP_HSIZE; iy++ ) 
     for( ix = 0; ix < MAP_WSIZE; ix++ )
-      if( tmp_map[ iy ][ ix ] == MONSTER )
-        map[ iy ][ ix ] = MONSTER;
-  memset( tmp_map, EMPTY, sizeof( char ) * MAP_HSIZE * MAP_WSIZE );
+      if( map[iy][ix] == MONSTER )
+        monster_map[iy][ix] = 1;
 
-  for( iy = 0; iy < MAP_HSIZE; iy++ )
+  for( iy = 0; iy < MAP_HSIZE; iy++ ) 
     for( ix = 0; ix < MAP_WSIZE; ix++ )
-      if( map[ iy ][ ix ] == MONSTER ){
-        if(x < ix )
-          if( (map[iy][ix-1] == EMPTY  ) && (tmp_map[iy][ix-1] == EMPTY  )){
-            map[iy][ix] = EMPTY;
-            tmp_map[iy][ix-1] = MONSTER;
-          }
-        if( map[iy][ix-1] == PLAYER ) die = 1;
-      }
-  for( iy = 0; iy < MAP_HSIZE; iy++ )
-    for( ix = 0; ix < MAP_WSIZE; ix++ )
-      if( tmp_map[ iy ][ ix ] == MONSTER )
-        map[ iy ][ ix ] = MONSTER;
-  memset( tmp_map, EMPTY, sizeof( char ) * MAP_HSIZE * MAP_WSIZE );
+      if( map[iy][ix] == DIRT || map[iy][ix] == DIAMOND || map[iy][ix] == WALL ||
+          map[iy][ix] == STONE || map[iy][ix] == BOMB || map[iy][ix] == MONSTER )
+        IO_map[iy][ix] = 0;
 
-  for( iy = 0; iy < MAP_HSIZE; iy++ )
+  gps init;
+  gps next;
+  for( iy = 0; iy < MAP_HSIZE; iy++ ) 
     for( ix = 0; ix < MAP_WSIZE; ix++ )
-      if( map[ iy ][ ix ] == MONSTER ){
-        if( y < iy )
-          if( (map[iy-1][ix] == EMPTY ) && ( tmp_map[iy-1][ix] == EMPTY ) ){
-            map[iy][ix] = EMPTY;
-            tmp_map[iy-1][ix] = MONSTER;
-          }
-        if( map[iy-1][ix] == PLAYER ) die = 1;
-      }
-  for( iy = 0; iy < MAP_HSIZE; iy++ )
-    for( ix = 0; ix < MAP_WSIZE; ix++ )
-      if( tmp_map[ iy ][ ix ] == MONSTER )
-        map[ iy ][ ix ] = MONSTER;
+      if( monster_map[iy][ix] ){
+        init.y = iy; init.x = ix;
 
-  return die;
+        if( path( IO_map, init, player, &next ) ){
+          if( next.y == player.y && next.x == player.x  ) return 1;
+          map[ iy     ][ ix     ] = EMPTY;
+          map[ next.y ][ next.x ] = MONSTER;
+          IO_map[ iy     ][ ix     ] = 1;
+          IO_map[ next.y ][ next.x ] = 0;
+        }
+      }
+
+  return 0;
 }
 
 void help(){
@@ -369,89 +325,85 @@ void help(){
 }
 
 int game( int nlevel ){
-  int lives = 3;
-  int bombs = 0;
-  int score = 0;
-  int diamonds = 0;
+  LSDB lsdb;
+  lsdb.lives    = 3;
+  lsdb.bombs    = 0;
+  lsdb.score    = 0;
+  lsdb.diamonds = 0;
 
   int die;
+  gps player;
+  int count = 0;
   int new_bomb = 0;
   int level = nlevel;
-  int player_x, player_y;
   int new_bomb_x, new_bomb_y;
   char map[MAP_HSIZE][MAP_WSIZE];
-  load_level( map, level, &player_y, &player_x, &diamonds );
 
   erase();
+  load_level( map, level, &player, &lsdb.diamonds );
+  draw_all( map, HZ, lsdb );
+
   nodelay( stdscr, TRUE );
 
   int run = 1;
   while( run ){
+    count++;
     die = 0;
     switch( tolower( getch() ) ){
-    case KEY_UP   :
-      if( move_player( map, &player_y, &player_x, UP   , &score, &diamonds, &bombs ) == -1)
-        die = 1;
-      break;
-    case KEY_DOWN :
-      if( move_player( map, &player_y, &player_x, DOWN , &score, &diamonds, &bombs ) == -1)
-        die = 1;
-      break;
-    case KEY_LEFT :
-      if( move_player( map, &player_y, &player_x, LEFT , &score, &diamonds, &bombs ) == -1)
-        die = 1;
-      break;
-    case KEY_RIGHT:
-      if( move_player( map, &player_y, &player_x, RIGHT, &score, &diamonds, &bombs ) == -1)
-        die = 1;
-      break;
-    case 'k'      :  die = 1    ; break;
-    case 'h'      :  help()     ; break;
-    case 27       :  run = false; break;
+    case KEY_UP   : if( move_player( map, &player, UP   , &lsdb) == -1 ) die = 1; break;
+    case KEY_DOWN : if( move_player( map, &player, DOWN , &lsdb) == -1 ) die = 1; break;
+    case KEY_LEFT : if( move_player( map, &player, LEFT , &lsdb) == -1 ) die = 1; break;
+    case KEY_RIGHT: if( move_player( map, &player, RIGHT, &lsdb) == -1 ) die = 1; break;
+    case 'k'      :                                                      die = 1; break;
+    case 'h'      : help()                                                      ; break;
+    case 27       : run = false                                                 ; break;
+    case 'q'      : if(msgbox("Quit game == 'q' ? yes : no ")== 'q') run = false; break;
     case 'b'      : 
-      if( bombs ){
+      if( lsdb.bombs ){
         if( new_bomb == 0 ){
-          bombs--;
+          lsdb.bombs--;
           new_bomb = 1;
-          new_bomb_y = player_y;
-          new_bomb_x = player_x;
+          new_bomb_y = player.y;
+          new_bomb_x = player.x;
         } 
       } break;
     case 't'      : 
       if( new_bomb ){
         new_bomb = 0;
         die = 1;
-      } else if( kaboom( map ) == -1 ) die = 1;
+      } else if( kaboom( map ) ) die = 1;
       break;
-
-    case 'q'      :
-      if( msgbox( "Quit game == 'q' ? yes : no " ) == 'q' ) run = false; break;
     default       :                break;
     } // switch( ch )
 
     if( new_bomb ){
-      if( player_y != new_bomb_y || player_x != new_bomb_x ){
+      if( player.y != new_bomb_y || player.x != new_bomb_x ){
         new_bomb = 0;
         map[new_bomb_y][new_bomb_x] = BOMB;
       }
     }
 
-    if( do_the_monster_dance( map, player_y, player_x ) ) die = 1;
-    if( gravity( map, &new_bomb )                       ) die = 1;
+    if( count >= 4 ){
+      if( do_the_monster_dance( map, player ) ) die = 1;
+      count = 0;
+    }
+    if( gravity( map, &new_bomb )             ) die = 1;
     if( die ){
-      kill_player(map, player_y, player_x );
-      lives--;
-      bombs = 0;
-      if( lives == 0 ){
+      kill_player(map, player );
+      lsdb.lives--;
+      lsdb.bombs = 0;
+      new_bomb = 0;
+      if( lsdb.lives == 0 ){
         if( msgbox( "continue" ) != 'q' ) return level;
         else                              return 0    ;
       }
 
-      load_level( map, level, &player_y, &player_x, &diamonds );
+      load_level( map, level, &player, &lsdb.diamonds );
     }
-    if( diamonds <= 0 ) load_level( map, ++level, &player_y, &player_x, &diamonds );
+    if( lsdb.diamonds <= 0 )
+      load_level( map, ++level, &player, &lsdb.diamonds );
 
-    draw_all( map, HZ, lives, score, diamonds, bombs );
+    draw_all( map, HZ, lsdb );
   }   // while( run )
 
   nodelay( stdscr, FALSE );

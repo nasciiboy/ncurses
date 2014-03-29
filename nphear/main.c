@@ -20,6 +20,7 @@ int main( int argc, char** argv ){
 
   start_curses();
   start_ck();
+  erase();
 
   int run = 1;
   while( run ){

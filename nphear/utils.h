@@ -5,6 +5,7 @@
 
 void start_curses();
 void end_curses();
+void clrscr();
 void start_ck();
 void nasciiboy();
 void min_size( int y, int x );

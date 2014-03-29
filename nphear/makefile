@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -Wall
 LIBS = -lncurses
-OBJS = utils.o file.o map.o game.o menu.o editor.o main.o
+OBJS = utils.o file.o map.o pathfinding.o game.o menu.o editor.o main.o
 EXE = test
 
 $(EXE): $(OBJS)
