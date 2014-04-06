@@ -76,11 +76,13 @@ void ehelp(){
   wbkgd( helpwin, COLOR_PAIR( YB ) );
   box( helpwin, 0, 0 );
   print_in_middle( helpwin, 3, "MENU" );
-  mvwaddstr( helpwin, 5, 5, "0  -  9   --> SET OBJ" ); 
-  mvwaddstr( helpwin, 6, 5, "   l      --> DRAWN LOCK ON/OFF" ); 
-  mvwaddstr( helpwin, 7, 5, "   h      --> HELP" ); 
-  mvwaddstr( helpwin, 8, 5, "   s      --> SAVE" ); 
-  mvwaddstr( helpwin, 9, 5, "q  - ESC  --> MENU" ); 
+  mvwaddstr( helpwin,  5, 5, "0  -  9   --> SET OBJ" );
+  mvwaddstr( helpwin,  6, 5, "   l      --> DRAWN LOCK ON/OFF" );
+  mvwaddstr( helpwin,  7, 5, "   h      --> HELP" );
+  mvwaddstr( helpwin,  8, 5, "   s      --> SAVE" );
+  mvwaddstr( helpwin,  9, 5, "   a      --> SET ALL CHARACTERS" );
+  mvwaddstr( helpwin, 10, 5, "   r      --> RELOAD LEVEL" );
+  mvwaddstr( helpwin, 11, 5, "q  - ESC  --> MENU" );
   wrefresh( helpwin );
   nodelay( stdscr, FALSE );
   getch();
@@ -109,7 +111,6 @@ int editor( int elevel ){
   int level = elevel;
   int curs_x, curs_y;
   char map[MAP_HSIZE][MAP_WSIZE];
-
   erase();
 
   attrset(COLOR_PAIR(GB));
@@ -130,6 +131,17 @@ int editor( int elevel ){
   nodelay( stdscr, TRUE );
 
   load_elevel( map, level, &curs_y, &curs_x );
+
+  // gps player;
+  // gps old_player;
+
+  // int i, ii;
+  // for(i = 0; i < MAP_HSIZE; i++)
+  //   for(ii = 0; ii < MAP_WSIZE; ii++)
+  //     if( map[i][ii] == PLAYER ){
+  //       old_player.y =  i;
+  //       old_player.x = ii;
+  //     }
 
   int run = 1;
   while( run ){
@@ -153,9 +165,15 @@ int editor( int elevel ){
     case 'l'      : lock *= -1    ; break;
     case 'h'      : ehelp()       ; break;
     case 27       : run = false   ; break;
+    case 's'      : save( map, level )       ;           break;
+    case 'r'      : load_elevel( map, level, &curs_y, &curs_x ); break;
     case 10       : map[curs_y][curs_x] = obj;           break;
     case ' '      : map[curs_y][curs_x] = obj; curs_x++; break;
-    case 's'      : save( map, level )       ;           break;
+
+    case 'a'      : 
+      if( obj != PLAYER )
+        memset( map, obj, sizeof(char) * MAP_HSIZE * MAP_WSIZE );
+      break;
     case 'q'      :
       curs_set( FALSE );
       if( msgbox( "Quit editor == 'q' ? yes : no " ) == 'q' ) run = false;

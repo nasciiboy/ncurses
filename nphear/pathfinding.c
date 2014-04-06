@@ -2,7 +2,8 @@
 #include <string.h>
 
 int path_find( const char map[MAP_HSIZE][MAP_WSIZE], char arrow_map[MAP_HSIZE][MAP_WSIZE],
-               gps init, gps end ){
+               gps init ){
+  memset( arrow_map, 4, sizeof(char) * MAP_HSIZE * MAP_WSIZE );
   int change = 0;
   int y, x;
   int i, ii, dir;
@@ -19,63 +20,64 @@ int path_find( const char map[MAP_HSIZE][MAP_WSIZE], char arrow_map[MAP_HSIZE][M
         case LEFT : arrow_map[y][x] = RIGHT; change = 1; break;
         case DOWN : arrow_map[y][x] = UP   ; change = 1; break;
         }
-      if( x == end.x && y == end.y )  return 1;
     }
   }
 
   while( change ){
     change = 0;
+    // RIGHT -> DOWN ->  -- UP -- LEFT --
     for( i = 0; i < MAP_HSIZE; i++ )
       for( ii = 0; ii < MAP_WSIZE; ii++ ){
         if( arrow_map[i][ii] < 4 ){
-          for( int dir = 0; dir < 4; dir++ ){
-            y = i  + dy[dir];
-            x = ii + dx[dir];
-            if( x < 0 || y < 0 || x >= MAP_WSIZE || y >= MAP_HSIZE ){
-              // out of limits
-            } else {
-              if( map[y][x] && arrow_map[y][x] == 4 )
-                switch( dir ){
-                case RIGHT: arrow_map[y][x] = LEFT ; change = 1; break;
-                case UP   : arrow_map[y][x] = DOWN ; change = 1; break;
-                case LEFT : arrow_map[y][x] = RIGHT; change = 1; break;
-                case DOWN : arrow_map[y][x] = UP   ; change = 1; break;
-                }
-              if( x == end.x && y == end.y )  return 1;
+          y = i  + dy[UP];
+          x = ii + dx[UP];
+          if( x < 0 || y < 0 || x >= MAP_WSIZE || y >= MAP_HSIZE ){
+            // out of limits
+          } else {
+            if( map[y][x] && arrow_map[y][x] == 4 ){
+              arrow_map[y][x] = DOWN ; change = 1;
             }
-          }
-        }
-      }
-  }
+          }     // else
 
-  return 0;
-}
+          y = i  + dy[LEFT];
+          x = ii + dx[LEFT];
+          if( x < 0 || y < 0 || x >= MAP_WSIZE || y >= MAP_HSIZE ){
+            // out of limits
+          } else {
+            if( map[y][x] && arrow_map[y][x] == 4 ){
+              arrow_map[y][x] = RIGHT; change = 1;
+            }
+          }       // else
+        }         // if( arrow_map < 4 )
+      }           // for( ii )
 
-void enigma( const char map[MAP_HSIZE][MAP_WSIZE], gps init, gps end, gps* next ){
-  int y = end.y;
-  int x = end.x;
+    // LEFT -> UP ->  -- DOWN -- RIGHT --
+    for( i = MAP_HSIZE - 1; i >= 0; i-- )
+      for( ii = MAP_WSIZE - 1; ii >= 0; ii-- ){
+        if( arrow_map[i][ii] < 4 ){
+          y = i  + dy[DOWN];
+          x = ii + dx[DOWN];
+          if( x < 0 || y < 0 || x >= MAP_WSIZE || y >= MAP_HSIZE ){
+            // out of limits
+          } else {
+            if( map[y][x] && arrow_map[y][x] == 4 ){
+              arrow_map[y][x] = UP; change = 1;
+            }
+          }     // else
 
-  while( !( y == init.y && x == init.x ) ){
-    next->y = y;
-    next->x = x;
+          y = i  + dy[RIGHT];
+          x = ii + dx[RIGHT];
+          if( x < 0 || y < 0 || x >= MAP_WSIZE || y >= MAP_HSIZE ){
+            // out of limits
+          } else {
+            if( map[y][x] && arrow_map[y][x] == 4 ){
+              arrow_map[y][x] = LEFT; change = 1;
+            }
+          }       // else
+        }         // if( arrow_map < 4 )
+      }           // for( ii )
 
-    switch( map[y][x] ){
-    case RIGHT: x++; break;
-    case UP   : y--; break;
-    case LEFT : x--; break;
-    case DOWN : y++; break;
-    }
-  }
-}
-
-int path( char map[MAP_HSIZE][MAP_WSIZE], gps init, gps end, gps* next){
-  char arrow_map[MAP_HSIZE][MAP_WSIZE];
-  memset( arrow_map, 4, sizeof(char) * MAP_HSIZE * MAP_WSIZE );
-
-  if( path_find( map, arrow_map, init, end ) ){
-    enigma( arrow_map, init, end, next );
-    return 1;
-  }
+  }               // while( change )
 
   return 0;
 }

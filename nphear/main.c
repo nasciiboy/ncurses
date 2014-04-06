@@ -13,7 +13,7 @@ int main( int argc, char** argv ){
     switch( ch ){
     case 'h': puts( "nphear [-e] [-v] [-h]\n" ); break;
     case '?': puts( "-h help\n" ); break;
-    case 'e': puts( "edito" ); break;
+    case 'e': puts( "editor" ); break;
     case 'v': puts( VERSION ); break;
     }
   }
@@ -34,7 +34,6 @@ int main( int argc, char** argv ){
     else if( opt < 0){
         opt = editor( -( opt ) );
     }
-    //if( msgbox( "quit" ) == 'q' ) run = 0;
   }
 
   end_curses();

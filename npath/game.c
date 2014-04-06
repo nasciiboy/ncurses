@@ -9,27 +9,27 @@
 #include <ncurses.h>
 
 void kill_player( char map[MAP_HSIZE][MAP_WSIZE], gps player ){
-  map[ player.y ][ player.x ] = BLOOD;
-  timespec req;
-    req.tv_sec = 0;
-    req.tv_nsec = 400000000;
+  // map[ player.y ][ player.x ] = BLOOD;
+  // timespec req;
+  //   req.tv_sec = 0;
+  //   req.tv_nsec = 400000000;
 
-  int i;
-  for( i = 1; i < 3; i++ ){
-    change_chmap( map, player.y    , player.x - i, BLOOD, 0    );  //   +
-    change_chmap( map, player.y    , player.x + i, BLOOD, 0    );  //  +Z+
-    change_chmap( map, player.y - i, player.x    , BLOOD, 0    );  //   + 
-    change_chmap( map, player.y + i, player.x    , BLOOD, 0    );
-    change_chmap( map, player.y - i, player.x - i, BLOOD, DIRT );  //  + +
-    change_chmap( map, player.y - i, player.x + i, BLOOD, DIRT );  //   Z
-    change_chmap( map, player.y + i, player.x - i, BLOOD, DIRT );  //  + +
-    change_chmap( map, player.y + i, player.x + i, BLOOD, DIRT );
-    draw_map( map, MAP_Y, MAP_X );
-    refresh();
-    nanosleep( &req, 0 );
-  }
+  // int i;
+  // for( i = 1; i < 3; i++ ){
+  //   change_chmap( map, player.y    , player.x - i, BLOOD, 0    );  //   +
+  //   change_chmap( map, player.y    , player.x + i, BLOOD, 0    );  //  +Z+
+  //   change_chmap( map, player.y - i, player.x    , BLOOD, 0    );  //   + 
+  //   change_chmap( map, player.y + i, player.x    , BLOOD, 0    );
+  //   change_chmap( map, player.y - i, player.x - i, BLOOD, DIRT );  //  + +
+  //   change_chmap( map, player.y - i, player.x + i, BLOOD, DIRT );  //   Z
+  //   change_chmap( map, player.y + i, player.x - i, BLOOD, DIRT );  //  + +
+  //   change_chmap( map, player.y + i, player.x + i, BLOOD, DIRT );
+  //   draw_map( map, MAP_Y, MAP_X );
+  //   refresh();
+  //   nanosleep( &req, 0 );
+  // }
 
-  flushinp();
+  // flushinp();
 }
 
 int move_obj( char map[MAP_HSIZE][MAP_WSIZE], int obj, int y, int x, int move ){
@@ -85,16 +85,28 @@ int move_player( char map[MAP_HSIZE][MAP_WSIZE], gps* player, int move ){
 void draw_all( char map[MAP_HSIZE][MAP_WSIZE], char path_map[MAP_HSIZE][MAP_WSIZE],
                int delay ){
   if( delay ){
+    int i, ii, count_m = 0;
+    for( i = 0; i < MAP_HSIZE; i++ ) 
+      for( ii = 0; ii < MAP_WSIZE; ii++ )
+        if( map[i][ii] == MONSTER ) count_m++;
+
     timespec req;
     req.tv_sec = 0;
     req.tv_nsec = delay;
     nanosleep( &req, 0 );
     draw_map( map, MAP_Y, MAP_X );
-    draw_map( path_map, MAP_Y, MAP_X + 40 );
+    draw_map( path_map, MAP_Y, MAP_X + MAP_WSIZE );
+    mvprintw( 0,  1, "monsters %3i", count_m );
     refresh();
   } else {
+    int i, ii, count_m = 0;
+    for( i = 0; i < MAP_HSIZE; i++ ) 
+      for( ii = 0; ii < MAP_WSIZE; ii++ )
+        if( map[i][ii] == MONSTER ) count_m++;
+
     draw_map( map, MAP_Y, MAP_X );
-    draw_map( path_map, MAP_Y, MAP_X + 40 );
+    draw_map( path_map, MAP_Y, MAP_X + MAP_WSIZE );
+    mvprintw( 0,  1, "monsters %3i", count_m );
     refresh();
   }
 }
@@ -164,25 +176,31 @@ int do_the_monster_dance( char map[MAP_HSIZE][MAP_WSIZE], char path_map[MAP_HSIZ
   for( iy = 0; iy < MAP_HSIZE; iy++ ) 
     for( ix = 0; ix < MAP_WSIZE; ix++ ){
       if( map[iy][ix] == DIRT || map[iy][ix] == DIAMOND || map[iy][ix] == WALL ||
-          map[iy][ix] == STONE || map[iy][ix] == BOMB || map[iy][ix] == MONSTER )
+          map[iy][ix] == STONE || map[iy][ix] == BOMB )
         IO_map[iy][ix] = 0;
       if( map[iy][ix] == MONSTER )
         monster_map[iy][ix] = 1;
     }
 
-  gps init;
+  path_find( IO_map, path_map, player );
+
   gps next;
   for( iy = 0; iy < MAP_HSIZE; iy++ ) 
     for( ix = 0; ix < MAP_WSIZE; ix++ )
       if( monster_map[iy][ix] ){
-        init.y = iy; init.x = ix;
+        if( path_map[iy][ix] < 4 ){
+          next.y = iy + dy[ path_map[iy][ix] ];
+          next.x = ix + dx[ path_map[iy][ix] ];
 
-        if( path( IO_map, path_map, init, player, &next ) ){
-          if( next.y == player.y && next.x == player.x  ) return 1;
-          map[ iy     ][ ix     ] = EMPTY;
-          map[ next.y ][ next.x ] = MONSTER;
-          IO_map[ iy     ][ ix     ] = 1;
-          IO_map[ next.y ][ next.x ] = 0;
+          if( map[ next.y ][ next.x ] != MONSTER ){
+            if( next.y == player.y && next.x == player.x  ){
+            map[ iy     ][ ix     ] = EMPTY;
+            } else {
+            map[ iy     ][ ix     ] = EMPTY;
+            map[ next.y ][ next.x ] = MONSTER;
+            //if( next.y == player.y && next.x == player.x  ) return 1;
+            }
+          }
         }
       }
 
@@ -229,10 +247,12 @@ int game( int nlevel ){
     case KEY_DOWN : if( move_player( map, &player, DOWN  ) == -1 ) die = 1; break;
     case KEY_LEFT : if( move_player( map, &player, LEFT  ) == -1 ) die = 1; break;
     case KEY_RIGHT: if( move_player( map, &player, RIGHT ) == -1 ) die = 1; break;
+    case 'p'      : nodelay( stdscr, FALSE ); getch(); nodelay( stdscr, TRUE )  ; break;
+    case 'r'      : load_level( map, level, &player )                           ; break;
     case 'h'      : help()                                                      ; break;
     case 27       : run = false                                                 ; break;
     case 'q'      : if(msgbox("Quit game == 'q' ? yes : no ")== 'q') run = false; break;
-    case 'p'      :   nodelay( stdscr, FALSE ); break;
+
     default       :                break;
     } // switch( ch )
 
@@ -246,6 +266,11 @@ int game( int nlevel ){
       else                              return 0    ;
     }
 
+
+  for( int iy = 0; iy < MAP_HSIZE; iy++ ) 
+    for( int ix = 0; ix < MAP_WSIZE; ix++ ){
+      if( map[iy][ix] == MONSTER ) path_map[iy][ix] = 4;
+    }
 
     draw_all( map, path_map, HZ );
   }   // while( run )

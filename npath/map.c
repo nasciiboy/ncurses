@@ -48,14 +48,14 @@ void draw_map( char map[MAP_HSIZE][MAP_WSIZE], int y, int x ){
   for(i = 0; i < MAP_HSIZE; i++)
     for(ii = 0; ii < MAP_WSIZE; ii++)
       switch( map[i][ii] ){
-      case RIGHT  : mvaddch( y + i, x + ii, '>' | COLOR_PAIR( GB )            ); break;
-      case UP     : mvaddch( y + i, x + ii, '^' | COLOR_PAIR( YB ) | A_NORMAL ); break;
-      case LEFT   : mvaddch( y + i, x + ii, '<' | COLOR_PAIR( RB ) | A_NORMAL ); break;
-      case DOWN   : mvaddch( y + i, x + ii, 'v' | COLOR_PAIR( BB ) | A_BOLD   ); break;
-      case 4      : mvaddch( y + i, x + ii, ' ' | COLOR_PAIR( WW )            ); break;
+      case RIGHT  : mvaddch( y + i, x + ii, '>' | COLOR_PAIR( GB )); break;
+      case UP     : mvaddch( y + i, x + ii, '^' | COLOR_PAIR( YB )); break;
+      case LEFT   : mvaddch( y + i, x + ii, '<' | COLOR_PAIR( CB )); break;
+      case DOWN   : mvaddch( y + i, x + ii, 'v' | COLOR_PAIR( MB )); break;
+      case 4      : mvaddch( y + i, x + ii, ' ' | COLOR_PAIR( XX )); break;
 
       case EMPTY  : mvaddch( y + i, x + ii, EMPTY   | COLOR_PAIR( WB )            ); break;
-      case DIRT   : mvaddch( y + i, x + ii, DIRT    | COLOR_PAIR( RB ) | A_NORMAL ); break;
+      case DIRT   : mvaddch( y + i, x + ii, DIRT    | COLOR_PAIR( GG ) | A_NORMAL ); break;
       case STONE  : mvaddch( y + i, x + ii, STONE   | COLOR_PAIR( WB ) | A_NORMAL ); break;
       case DIAMOND: mvaddch( y + i, x + ii, DIAMOND | COLOR_PAIR( YB ) | A_BOLD   ); break;
       case WALL   : mvaddch( y + i, x + ii, WALL    | COLOR_PAIR( CB ) | A_NORMAL ); break;

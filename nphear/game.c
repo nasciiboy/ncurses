@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "pathfinding.h"
 
+#include <stdlib.h>
 #include <time.h>
 #include <string.h>
 #include <ctype.h> // tolower
@@ -276,34 +277,55 @@ int do_the_monster_dance( char map[MAP_HSIZE][MAP_WSIZE], gps player ) {
   memset( IO_map, 1, sizeof(char) * MAP_HSIZE * MAP_WSIZE );
   char monster_map[MAP_HSIZE][MAP_WSIZE];
   memset( monster_map, 0, sizeof(char) * MAP_HSIZE * MAP_WSIZE );
+  char path_map[MAP_HSIZE][MAP_WSIZE];
 
   int iy, ix; 
   for( iy = 0; iy < MAP_HSIZE; iy++ ) 
-    for( ix = 0; ix < MAP_WSIZE; ix++ )
+    for( ix = 0; ix < MAP_WSIZE; ix++ ){
+      if( map[iy][ix] == DIRT || map[iy][ix] == DIAMOND || map[iy][ix] == WALL ||
+          map[iy][ix] == STONE || map[iy][ix] == BOMBPK || map[iy][ix] == BOMB )
+        IO_map[iy][ix] = 0;
       if( map[iy][ix] == MONSTER )
         monster_map[iy][ix] = 1;
+    }
 
-  for( iy = 0; iy < MAP_HSIZE; iy++ ) 
-    for( ix = 0; ix < MAP_WSIZE; ix++ )
-      if( map[iy][ix] == DIRT || map[iy][ix] == DIAMOND || map[iy][ix] == WALL ||
-          map[iy][ix] == STONE || map[iy][ix] == BOMB || map[iy][ix] == MONSTER )
-        IO_map[iy][ix] = 0;
+  path_find( IO_map, path_map, player );
 
-  gps init;
   gps next;
   for( iy = 0; iy < MAP_HSIZE; iy++ ) 
     for( ix = 0; ix < MAP_WSIZE; ix++ )
       if( monster_map[iy][ix] ){
-        init.y = iy; init.x = ix;
+        // pathfinding
+        if( path_map[iy][ix] < 4 ){
+          next.y = iy + dy[ int( path_map[iy][ix] ) ];
+          next.x = ix + dx[ int( path_map[iy][ix] ) ];
 
-        if( path( IO_map, init, player, &next ) ){
-          if( next.y == player.y && next.x == player.x  ) return 1;
-          map[ iy     ][ ix     ] = EMPTY;
-          map[ next.y ][ next.x ] = MONSTER;
-          IO_map[ iy     ][ ix     ] = 1;
-          IO_map[ next.y ][ next.x ] = 0;
-        }
-      }
+          if( map[ next.y ][ next.x ] != MONSTER ){
+            if( next.y == player.y && next.x == player.x  ){
+              return 1;
+              // map[ iy     ][ ix     ] = EMPTY;
+            } else {
+            map[ iy     ][ ix     ] = EMPTY;
+            map[ next.y ][ next.x ] = MONSTER;
+            }
+          }
+        } else { // do the monster dance
+          int dir = rand() % 4;
+
+          next.y = iy + dy[dir];
+          next.x = ix + dx[dir];
+          if( next.x < 0 || next.y < 0 || next.x >= MAP_WSIZE || next.y >= MAP_HSIZE ){
+            // out of limits
+          } else {
+            if( map[ next.y ][ next.x ] == EMPTY ){
+              map[ iy     ][ ix     ]    = EMPTY;
+              map[ next.y ][ next.x ]    = MONSTER;
+            }
+          }
+
+        } // else
+      }   // if( moster_map )
+
 
   return 0;
 }
@@ -312,11 +334,15 @@ void help(){
   WINDOW* helpwin = newwin( 20, 50, (GLOBAL_HEIGHT - 20)/2, (GLOBAL_WIDTH - 50) / 2 );
   wbkgd( helpwin, COLOR_PAIR( YB ) );
   box( helpwin, 0, 0 );
-  mvwaddstr( helpwin,  1, 1, "asx cjnchkjsd sdkjcnsd" ); 
-  mvwaddstr( helpwin, 11, 1, "asx cjnchkjsd sdkjcnsd" ); 
-  mvwaddstr( helpwin, 17, 1, "asx cjnchkjsd sdkjcnsd" ); 
-  mvwaddstr( helpwin,  8, 1, "asx cjnchkjsd sdkjcnsd" ); 
-  mvwaddstr( helpwin,  7, 1, "asx cjnchkjsd sdkjcnsd" ); 
+
+  print_in_middle( helpwin, 3, "Cavez of Phear" );
+  mvwaddstr( helpwin,  6, 5, "   arrows --> MOVE PLAYER" );
+  mvwaddstr( helpwin,  7, 5, "   h      --> HELP" );
+  mvwaddstr( helpwin,  8, 5, "   t      --> KABOOM" );
+  mvwaddstr( helpwin,  9, 5, "   b      --> BOMB" );
+  mvwaddstr( helpwin, 10, 5, "   k      --> harakiri" );
+  mvwaddstr( helpwin, 11, 5, " q - ESC  --> MENU" );
+
   wrefresh( helpwin );
   nodelay( stdscr, FALSE );
   getch();
@@ -336,6 +362,7 @@ int game( int nlevel ){
   int count = 0;
   int new_bomb = 0;
   int level = nlevel;
+  int level_score = 0;
   int new_bomb_x, new_bomb_y;
   char map[MAP_HSIZE][MAP_WSIZE];
 
@@ -394,14 +421,17 @@ int game( int nlevel ){
       lsdb.bombs = 0;
       new_bomb = 0;
       if( lsdb.lives == 0 ){
-        if( msgbox( "continue" ) != 'q' ) return level;
+        if( msgbox( "continue == 'q' ? no : yes " ) != 'q' ) return level;
         else                              return 0    ;
       }
 
+      lsdb.score = level_score;
       load_level( map, level, &player, &lsdb.diamonds );
     }
-    if( lsdb.diamonds <= 0 )
+    if( lsdb.diamonds <= 0 ){
+      level_score = lsdb.score;
       load_level( map, ++level, &player, &lsdb.diamonds );
+    }
 
     draw_all( map, HZ, lsdb );
   }   // while( run )
