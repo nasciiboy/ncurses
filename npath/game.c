@@ -189,8 +189,8 @@ int do_the_monster_dance( char map[MAP_HSIZE][MAP_WSIZE], char path_map[MAP_HSIZ
     for( ix = 0; ix < MAP_WSIZE; ix++ )
       if( monster_map[iy][ix] ){
         if( path_map[iy][ix] < 4 ){
-          next.y = iy + dy[ path_map[iy][ix] ];
-          next.x = ix + dx[ path_map[iy][ix] ];
+          next.y = iy + dy[ (int)path_map[iy][ix] ];
+          next.x = ix + dx[ (int)path_map[iy][ix] ];
 
           if( map[ next.y ][ next.x ] != MONSTER ){
             if( next.y == player.y && next.x == player.x  ){

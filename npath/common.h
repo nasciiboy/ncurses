@@ -7,7 +7,7 @@
 #define VERSION "v 5000"
 #define HZ        25000000
 
-#define MAP_WSIZE 40
+#define MAP_WSIZE 39
 #define MAP_HSIZE 23
 #define MAP_X      0
 #define MAP_Y      1
@@ -45,9 +45,9 @@ enum CK {  BB = 1, BR, BG, BY, BX, BM, BC, BW,              // BLACK    B //
                       -xZ   -x-   Zx-   -x-     -x-   -x-    -x-     -x-
                       ---   ---   ---   -Z-     --Z   ---    ---     Z--
 */
-enum      MV      { RIGHT,   UP, LEFT, DOWN, DOWN_R, UP_R,  UP_L, DOWN_L, MAX_MV };
-const int dx[8] = {     1,    0,   -1,    0,      1,    1,    -1,     -1          };
-const int dy[8] = {     0,   -1,    0,    1,      1,   -1,    -1,      1          };
+enum      MV      {  UP, LEFT, DOWN, RIGHT, DOWN_R, UP_R,  UP_L, DOWN_L, MAX_MV };
+const int dx[8] = {   0,   -1,    0,     1,      1,    1,    -1,     -1          };
+const int dy[8] = {  -1,    0,    1,     0,      1,   -1,    -1,      1          };
 
 typedef struct {
   int y, x;

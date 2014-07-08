@@ -5,6 +5,107 @@
 #include <time.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+
+//--------------------------------------------------
+#define VISIT  1 /* cell is visited */
+
+int push( struct stack **top, const int x, const int y ) {
+  struct stack *node = (stack*)malloc( sizeof( stack ) );
+
+  if( node ){
+    node->x = x;
+    node->y = y;
+    node->next = *top;
+    *top = node;
+
+    return 0;
+  } return 1;
+}
+
+void pop( struct stack **top ){
+  if( *top ){
+    struct stack * tmp = *top;
+    *top = tmp->next;
+
+    free( tmp );
+  }
+}
+
+void free_stack( struct stack **top ){
+  while( *top ) pop( top );
+}
+
+int rand_neighbour( char maze[][ MAP_WSIZE ], int * const x, int * const y,
+                    const int w, const int h ){
+  char cdir[ 4 ] = { 1, 1, 1, 1 };
+
+  while( cdir[ UP ] || cdir[ LEFT ] || cdir[ DOWN ] || cdir[ RIGHT ] ){
+    int mv = rand() % 4;
+
+    if( cdir[ mv ] ){
+      int iy = *y + dy[ mv ] * 2;
+      int ix = *x + dx[ mv ] * 2;
+
+      if( ix <= 0 || iy <= 0 || ix >= MAP_WSIZE || iy >= MAP_HSIZE ) cdir[ mv ]  = 0;
+      else {
+        if( maze[ iy ][ ix ] == EMPTY ){
+          maze[ *y + dy[ mv ] ][ *x + dx[ mv ] ] = VISIT;
+          *y += dy[ mv ] * 2;
+          *x += dx[ mv ] * 2;
+          return 1;
+        } else {  cdir[ mv ] = 0;
+        }
+      }  // else
+    }    // while
+  }      // if cdir[ mv ]
+
+  return 0;
+}
+
+int generate( char maze[][ MAP_WSIZE ], const int w, const int h) {
+  struct stack *st = NULL;
+  int x, y, tmpx, tmpy;
+
+  srand( time( 0 ) );
+
+  x = w - 2;
+  y = h - 2;
+
+  while( 1 ){
+    maze[y][x] = VISIT;
+    tmpx = x;
+    tmpy = y;
+
+    if (rand_neighbour(maze, &x, &y, w, h)) {
+      if( push(&st, tmpx, tmpy)) {
+        free_stack(&st);
+
+        return 0;
+      }
+    } else {
+      /* If no neighbour, we backtrack to the mother cell */
+      x = st->x;
+      y = st->y;
+
+      pop( &st );
+
+      /* End generation if we can't backtrack further */
+      if( st->next == 0 ) {
+        break;
+      }
+    }
+  }
+  free_stack( &st );
+
+  /* Mark exit and entrance */
+  maze[1][0] = PLAYER;
+  maze[h - 2][w - 1] = MONSTER;
+
+  return 1;
+}
+
+//--------------------------------------------------
 
 void draw_chwin( WINDOW* win, int y, int x, int ch ){
   if( win == 0 ) win = stdscr;
@@ -164,6 +265,26 @@ int editor( int elevel ){
       curs_set( FALSE );
       if( msgbox( "Quit editor == 'q' ? yes : no " ) == 'q' ) run = false;
       curs_set( TRUE );
+      break;
+    case 'p': 
+      int i, ii;
+      for( i = 0; i < MAP_HSIZE; ++i) {
+        for(ii = 0; ii < MAP_WSIZE; ++ii){
+          if (i % 2 == 0 || ii % 2 == 0) {
+            map[i][ii] = WALL;
+          } else {
+            map[i][ii] = EMPTY;
+          }
+        }
+      }
+
+      generate( map, MAP_WSIZE, MAP_HSIZE );
+
+      for( i = 0; i < MAP_HSIZE; i++ )
+        for( ii = 0; ii < MAP_WSIZE; ii++ ){
+          if( map[ i  ][ ii ] == VISIT ) map[ i  ][ ii ] = EMPTY;
+        }
+
       break;
     default       :                 break;
     } // switch( ch )
