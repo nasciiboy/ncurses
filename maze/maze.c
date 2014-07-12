@@ -769,6 +769,7 @@ int move_player( char map[MAP_HSIZE][MAP_WSIZE], gps* player, enum MV move ){
 // carga desde fichero y establece la ubicacion del jugador
 void load_level( char map[MAP_HSIZE][MAP_WSIZE], gps* player ){
   load_map( "maze", map );
+  player->y = -1;
 
   int i, ii;
   for( i = 0; i < MAP_HSIZE; i++ )
@@ -778,6 +779,23 @@ void load_level( char map[MAP_HSIZE][MAP_WSIZE], gps* player ){
         player->x = ii;
       }
     }
+
+  if( player->y == -1 ) map[ player->y = 0 ][ player->x = 0 ] = PLAYER;
+}
+
+void load_player( char map[MAP_HSIZE][MAP_WSIZE], gps* player ){
+  player->y = -1;
+
+  int i, ii;
+  for( i = 0; i < MAP_HSIZE; i++ )
+    for( ii = 0; ii < MAP_WSIZE; ii++ ){
+      if( map[ i ][ ii ] == PLAYER ){ 
+        player->y = i;
+        player->x = ii;
+      }
+    }
+
+  if( player->y == -1 ) map[ player->y = 0 ][ player->x = 0 ] = PLAYER;
 }
 
 // reliza el movimiento de los mostruos mediante el mapa de flechas y el del laberinto
@@ -972,15 +990,7 @@ int game(){
   int die = 0;
   gps player;
 
-  // load_level( map, &player );
-  int i, ii;
-  for( i = 0; i < MAP_HSIZE; i++ )
-    for( ii = 0; ii < MAP_WSIZE; ii++ ){
-      if( map[ i ][ ii ] == PLAYER ){ 
-        player.y = i;
-        player.x = ii;
-      }
-    }
+  load_level( map, &player );
 
   nodelay( stdscr, TRUE );
 
@@ -994,7 +1004,7 @@ int game(){
     case KEY_LEFT : if( move_player( map, &player, LEFT  ) == -1 ) die = 1; break;
     case KEY_RIGHT: if( move_player( map, &player, RIGHT ) == -1 ) die = 1; break;
     case 'r'      : load_level( map, &player )                            ; break;
-    case 'e'      : editor( map, &player )                                ; break;
+    case 'e'      : editor( map, &player ); load_player( map, &player )   ; break;
     case 'h'      : game_help()                                           ; break;
     case 27       : run = false                                           ; break;
     case 'q'      : run = false                                           ; break;
