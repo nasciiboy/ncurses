@@ -129,7 +129,7 @@ char _mario[ 7 ][ 16 ][ 17 ] = {
     { "-XXX  X XXX-----" },
     { "X  XX X    X----" },
     { "X  XX  X   X----" },
-    { "-XX   XXXXX ----" },
+    { "-XX   XXXXX-----" },
     { "--XX     X------" },
     { "-X::XX::X-------" },
     { "X::::XX::X------" },
@@ -165,7 +165,7 @@ char _mario[ 7 ][ 16 ][ 17 ] = {
     { "---XX   XXXXXX--" },
     { "----XX      :X--" },
     { "--X:::X:::X:X---" },
-    { "-XXX:::X:::XXXX " },
+    { "-XXX:::X:::XXXX-" },
     { "X   X::X XX X::X" },
     { "X   X:XXXXXX:::X" },
     { "-X:XXXXXXXXX::X-" },
@@ -241,217 +241,105 @@ char _mario[ 7 ][ 16 ][ 17 ] = {
     { "--X:::X----XXX--" },
     { "---XXX----------" } } };
 
-char marioD0[ 15 ][ 13 ] = {
-  { "   XXXXX    " },
-  { "  X::::MXXX " },
-  { " X:::::::::X" },
-  { " XXX  X XXX " },
-  { "X  XX X    X" },
-  { "X  XX  X   X" },
-  { " XX   XXXXX " },
-  { "  XX     X  " },
-  { " X::XX::X   " },
-  { "X::::XX::X  " },
-  { "X::::XXXXX  " },
-  { " X   XX XX  " },
-  { " X  :::XXX  " },
-  { "  X:::::X   " },
-  { "   XXXXX    " } };
 
-char marioE0[ 15 ][ 13 ] = {
-  { "    XXXXX   " },
-  { " XXXM::::X  " },
-  { "X:::::::::X " },
-  { " XXX X  XXX " },
-  { "X    X XX  X" },
-  { "X   X  XX  X" },
-  { " XXXXX   XX " },
-  { "  X     XX  " },
-  { "   X::XX::X " },
-  { "  X::XX::::X" },
-  { "  XXXXX::::X" },
-  { "  XX XX   X " },
-  { "  XXX:::  X " },
-  { "   X:::::X  " },
-  { "    XXXXX   " } };
+char minimario[ 7 ][ 13 ][ 17 ] = {
+  { { "----------------" },
+    { "----XXXXX-------" },
+    { "---X::::MXXX ---" },
+    { "--X:::::::::X---" },
+    { "--XXX  X XXX ---" },
+    { "-X  XX X    X---" },
+    { "-X  XX  X   X---" },
+    { "--XX   XXXXX----" },
+    { "---XX     X-----" },
+    { "--X   XX XX-----" },
+    { "--X  :::XXX-----" },
+    { "---X:::::X------" },
+    { "----XXXXX-------" } },
 
-char marioD1[ 16 ][ 16 ] = {
-  { "     XXXXX     " },
-  { "    X::::MXXX  " },
-  { "   X:::::::::X " },
-  { "   XXX  X XXX  " },
-  { "  X  XX X    X " },
-  { "  X  XX  X   X " },
-  { "   XX   XXXXX  " },
-  { "   XXX     X   " },
-  { " XX:::XX::XXX  " },
-  { "X  ::::XX::X:X " },
-  { "X   ::XXXXXX: X" },
-  { " X  XXXX XX X X" },
-  { "  XXXXXXXXX::X " },
-  { " X::XXXXXX:::X " },
-  { " X:::X  X:::X  " },
-  { "  XXX    XXX   " } };
+  { { "-----XXXXX------" },
+    { "----X::::MXXX---" },
+    { "---X:::::::::X--" },
+    { "---XXX  X XXX---" },
+    { "--X  XX X    X--" },
+    { "--X  XX  X   X--" },
+    { "---XX   XXXXX---" },
+    { "---XXX     X----" },
+    { "--X XXXX XX X---" },
+    { "--XXXXXXXXX::X--" },
+    { "-X::XXXXXX:::X--" },
+    { "-X:::X--X:::X---" },
+    { "--XXX----XXX----" } },
 
-char marioE1[ 16 ][ 16 ] = {
-  { "     XXXXX     " },
-  { "  XXXM::::X    " },
-  { " X:::::::::X   " },
-  { "  XXX X  XXX   " },
-  { " X    X XX  X  " },
-  { " X   X  XX  X  " },
-  { "  XXXXX   XX   " },
-  { "   X     XXX   " },
-  { "  XXX::XX:::XX " },
-  { " X:X::XX::::  X" },
-  { "X :XXXXXX::   X" },
-  { "X X XX XXXX  X " },
-  { " X::XXXXXXXXX  " },
-  { " X:::XXXXXX::X " },
-  { "  X:::X  X:::X " },
-  { "   XXX    XXX  " } };
+  { { "-----XXXXX--XXX-" },
+    { "----X::::MXX   X" },
+    { "---X::::::::X  X" },
+    { "---XXX  X XXX:X-" },
+    { "--X  XX X    :X-" },
+    { "--X  XX  X   :X-" },
+    { "---XX   XXXXXX--" },
+    { "----XX      :X--" },
+    { "---XXXXXX:::X---" },
+    { "--XXXXXXXXX::X--" },
+    { "-X::XXXXXXX::X--" },
+    { "X::XXXXXX--XX---" },
+    { "-XX-XXX---------" } },
 
-char marioD2[ 16 ][ 17 ] = {
-  { "     XXXXX  XXX " },
-  { "    X::::MXX   X" },
-  { "   X::::::::X  X" },
-  { "   XXX  X XXX:X " },
-  { "  X  XX X    :X " },
-  { "  X  XX  X   :X " },
-  { "   XX   XXXXXX  " },
-  { "    XX      :X  " },
-  { "  X:::X:::X:X   " },
-  { " XXX:::X:::XXXX " },
-  { "X   X::X XX X::X" },
-  { "X   X:XXXXXX:::X" },
-  { " X:XXXXXXXXX::X " },
-  { "X:::XXXXXXXX::X " },
-  { "X::XXXXXX   XX  " },
-  { " XX XXX         " } };
+  { { "----------------" },
+    { "-----XXXXX------" },
+    { "--XXXM::::X-----" },
+    { "-X:::::::::X----" },
+    { "--XXX X  XXX----" },
+    { "-X    X XX  X---" },
+    { "-X   X  XX  X---" },
+    { "--XXXXX   XX----" },
+    { "---X     XX-----" },
+    { "---XX XX   X----" },
+    { "---XXX:::  X----" },
+    { "----X:::::X-----" },
+    { "-----XXXXX------" } },
 
-char marioE2[ 16 ][ 17 ] = {
-  { " XXX  XXXXX     " },
-  { "X   XXM::::X    " },
-  { "X  X::::::::X   " },
-  { " X:XXX X  XXX   " },
-  { " X:    X XX  X  " },
-  { " X:   X  XX  X  " },
-  { "  XXXXXX   XX   " },
-  { "  X:      XX    " },
-  { "   X:X:::X:::X  " },
-  { " XXXX:::X:::XXX " },
-  { "X::X XX X::X   X" },
-  { "X:::XXXXXX:X   X" },
-  { " X::XXXXXXXXX:X " },
-  { " X::XXXXXXXX:::X" },
-  { "  XX   XXXXXX::X" },
-  { "         XXX XX " } };
+  { { "-----XXXXX------" },
+    { "--XXXM::::X-----" },
+    { "-X:::::::::X----" },
+    { "--XXX X  XXX----" },
+    { "-X    X XX  X---" },
+    { "-X   X  XX  X---" },
+    { "--XXXXX   XX----" },
+    { "---X     XXX----" },
+    { "--X XX XXXX X---" },
+    { "-X::XXXXXXXXX---" },
+    { "-X:::XXXXXX::X--" },
+    { "--X:::X--X:::X--" },
+    { "---XXX----XXX---" } },
 
-char marioF0[ 16 ][ 17 ] = {
-  { "    XXXXXXX     " },
-  { "  XX:::M:::XX   " },
-  { " X::::XXX::::X  " },
-  { "  XXXXXXXXXXX   " },
-  { " X   X   X   X  " },
-  { "XX    :::    XX " },
-  { " X XXXXXXXXX X  " },
-  { "X X   X:X   XX  " },
-  { "X  XX X:X XX  X " },
-  { " X X:XXXXX:: X X" },
-  { "  X::::::::XXXXX" },
-  { " XXXX:::::X:::X " },
-  { "X::::X:::X::::X " },
-  { " X::::XXXXX:::X " },
-  { "  X:::X    XXX  " },
-  { "   XXX          " } };
+  { { "-XXX--XXXXX-----" },
+    { "X   XXM::::X ---" },
+    { "X  X::::::::X---" },
+    { "-X:XXX X  XXX---" },
+    { "-X:    X XX  X--" },
+    { "-X:   X  XX  X--" },
+    { "--XXXXXX   XX---" },
+    { "--X:      XX----" },
+    { "---X:::XXXXXX---" },
+    { "--X::XXXXXXXXX--" },
+    { "--X::XXXXXXX::X-" },
+    { "---XX---XXXXX::X" },
+    { "---------XXX-XX-" } },
 
-char marioD00[ 12 ][ 14 ] = {
-  { "    XXXXX    " },
-  { "   X::::MXXX " },
-  { "  X:::::::::X" },
-  { "  XXX  X XXX " },
-  { " X  XX X    X" },
-  { " X  XX  X   X" },
-  { "  XX   XXXXX " },
-  { "   XX     X  " },
-  { "  X   XX XX  " },
-  { "  X  :::XXX  " },
-  { "   X:::::X   " },
-  { "    XXXXX    " } };
-
-char marioE00[ 12 ][ 14 ] = {
-  { "     XXXXX   " },
-  { "  XXXM::::X  " },
-  { " X:::::::::X " },
-  { "  XXX X  XXX " },
-  { " X    X XX  X" },
-  { " X   X  XX  X" },
-  { "  XXXXX   XX " },
-  { "   X     XX  " },
-  { "   XX XX   X " },
-  { "   XXX:::  X " },
-  { "    X:::::X  " },
-  { "     XXXXX   " } };
-
-char marioD10[ 13 ][ 15 ] = {
-  { "     XXXXX    " },
-  { "    X::::MXXX " },
-  { "   X:::::::::X" },
-  { "   XXX  X XXX " },
-  { "  X  XX X    X" },
-  { "  X  XX  X   X" },
-  { "   XX   XXXXX " },
-  { "   XXX     X  " },
-  { "  X XXXX XX X " },
-  { "  XXXXXXXXX::X" },
-  { " X::XXXXXX:::X" },
-  { " X:::X  X:::X " },
-  { "  XXX    XXX  " } };
-
-char marioE10[ 13 ][ 15 ] = {
-  { "     XXXXX    " },
-  { "  XXXM::::X   " },
-  { " X:::::::::X  " },
-  { "  XXX X  XXX  " },
-  { " X    X XX  X " },
-  { " X   X  XX  X " },
-  { "  XXXXX   XX  " },
-  { "   X     XXX  " },
-  { "  X XX XXXX X " },
-  { " X::XXXXXXXXX " },
-  { " X:::XXXXXX::X" },
-  { "  X:::X  X:::X" },
-  { "   XXX    XXX " } };
-
-char marioD20[ 13 ][ 17 ] = {
-  { "     XXXXX  XXX " },
-  { "    X::::MXX   X" },
-  { "   X::::::::X  X" },
-  { "   XXX  X XXX:X " },
-  { "  X  XX X    :X " },
-  { "  X  XX  X   :X " },
-  { "   XX   XXXXXX  " },
-  { "    XX      :X  " },
-  { "   XXXXXX:::X   " },
-  { "  XXXXXXXXX::X  " },
-  { " X::XXXXXXX::X  " },
-  { "X::XXXXXX  XX   " },
-  { " XX XXX         " } };
-
-char marioE20[ 13 ][ 17 ] = {
-  { " XXX  XXXXX     " },
-  { "X   XXM::::X    " },
-  { "X  X::::::::X   " },
-  { " X:XXX X  XXX   " },
-  { " X:    X XX  X  " },
-  { " X:   X  XX  X  " },
-  { "  XXXXXX   XX   " },
-  { "  X:      XX    " },
-  { "   X:::XXXXXX   " },
-  { "  X::XXXXXXXXX  " },
-  { "  X::XXXXXXX::X " },
-  { "   XX   XXXXX::X" },
-  { "         XXX XX " } };
+  { { "----XXXXXXX-----" },
+    { "--XX:::M:::XX---" },
+    { "--XXXXXXXXXXX---" },
+    { "-X   X   X   X--" },
+    { "XX    :::    XX-" },
+    { "-X XXXXXXXXX X--" },
+    { "X X   X:X   XX--" },
+    { "X  XX X:X XX  X-" },
+    { "--X::::::::XXXXX" },
+    { "-XXXX:::::X:::X-" },
+    { "-X::::XXXXX:::X-" },
+    { "--X:::X----XXX--" },
+    { "---XXX----------" } } };
 
 char _gompa[ 6 ][ 10 ][ 19 ] = {
   { { "-------XXXX-------" },
@@ -487,6 +375,18 @@ char _gompa[ 6 ][ 10 ][ 19 ] = {
     { "----XX::::XXXX----" },
     { "-----XX::XXXX-----" } },
 
+  /*
+  { { "------------------" },
+    { "------------------" },
+    { "----XXXXXXXX------" },
+    { "-XXX >XXXX< XXX---" },
+    { "XXXX X XX X XXXX--" },
+    { "XXXX   XX   XXXX--" },
+    { "-XXXXX::::XXXXX---" },
+    { "-----::::::-------" },
+    { "---XXX::::XXX-----" },
+    { "----XXX::XXX------" } },
+  */
   { { "------------------" },
     { "------------------" },
     { "------------------" },
@@ -519,66 +419,6 @@ char _gompa[ 6 ][ 10 ][ 19 ] = {
     { "------------------" },
     { "------------------" },
     { "------------------" } } };
-
-char gompa0[ 10 ][ 17 ] = {
-  { "       XXXX     " },
-  { "   XXXXXXXXXX   " },
-  { "  XXX >XXXX< X  " },
-  { " XXXX X XX X XX " },
-  { "XXXXX   XX   XXX" },
-  { " XXXXXXXXXXXXXX " },
-  { "  XXXXX::::XXX  " },
-  { "  XXX::::::     " },
-  { "  XXXX::::XX    " },
-  { "   XXXX::XX     " } };
-
-char gompa1[ 10 ][ 17] = {
-  { "      XXXX      " },
-  { "   XXXXXXXXXX   " },
-  { "  XX >XXXX< XX  " },
-  { " XXX X XX X XXX " },
-  { "XXXX   XX   XXXX" },
-  { " XXXXXXXXXXXXXX " },
-  { "  XXXX::::XXXX  " },
-  { "     ::::::     " },
-  { "   XX::::::XX   " },
-  { "    XX::::XX    " } };
-
-char gompa2[ 10 ][ 17 ] = {
-  { "     XXXX       " },
-  { "   XXXXXXXXXX   " },
-  { "  X >XXXX< XXX  " },
-  { " XX X XX X XXXX " },
-  { "XXX   XX   XXXXX" },
-  { " XXXXXXXXXXXXXX " },
-  { "  XXX::::XXXX   " },
-  { "     ::::::XXX  " },
-  { "    XX::::XXXX  " },
-  { "     XX::XXXX   " } };
-
-/*
-char gompa3[ 8 ][ 17 ] = {
-  { "    XXXXXXXX    " },
-  { " XXX >XXXX< XXX " },
-  { "XXXX X XX X XXXX" },
-  { "XXXX   XX   XXXX" },
-  { " XXXXX::::XXXXX " },
-  { "     ::::::     " },
-  { "   XXX::::XXX   " },
-  { "    XXX::XXX    " } };
-*/
-
-char gompa3[ 5 ][ 19 ] = {
-  { "   XXXXXXXXXXXX   " },
-  { " XXXX >XXXX< XXXX " },
-  { "XXXXX X XX X XXXXX" },
-  { "   XXX::::::XXX   " },
-  { "    XXX::::XXX    " } };
-
-char gompa4[ 3 ][ 19 ] = {
-  { "   XXXXXXXXXXXX   " },
-  { "XXXXX X XX X XXXXX" },
-  { "    XXX::::XXX    " } };
 
 char cloudDraw[ 13 ][ 35 ] = {
   { "--------------XXXXXXX------------" },
@@ -613,27 +453,6 @@ char _coinDraw[ 3 ][ 5 ][ 11 ] = {
     { "----@@----" },
     { "----@@----" },
     { "----@@----" } } };
-
-char coinDraw0[ 5 ][ 11 ] = {
-  { "    @@    " },
-  { "  @@  @@  " },
-  { " @  @@  @ " },
-  { "  @@  @@  " },
-  { "    @@    " } };
-
-char coinDraw1[ 5 ][ 11 ] = {
-  { "    @@    " },
-  { "   @  @   " },
-  { "  @ @@ @  " },
-  { "   @  @   " },
-  { "    @@    " } };
-
-char coindraw2[ 5 ][ 11 ] = {
-  { "    @@    " },
-  { "    @@    " },
-  { "    @@    " },
-  { "    @@    " },
-  { "    @@    " } };
 
 char piso1[ 11 ] = "::::XX::::";
 char piso2[ 11 ] = "X::::::::X";
