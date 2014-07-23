@@ -27,7 +27,7 @@
 enum state { MENU, QUIT, SPLASH, GAME, WIN, DEAD, WINPOINT, GAMEOVER, GAMEWIN };
 enum state screenGame;
 
-enum ckcol { MARIO, SCORE, PISO, CLOUD, MOUNT, BLOCK, CASTLE, MENUD, LOGO, HOLE, COIN, GOMPA, FLAG, GOV, DEFAULT };
+enum ckcol { MARIO, SCORE, PISO, CLOUD, MOUNT, BLOCK, CASTLE, MENUD, LOGO, HOLE, COIN, GOMPA, FLAG, GOV, PARABENS, DEFAULT };
 
 const int sizeFase = 3000;
 chtype screen[ 128 ][ 256 ];
@@ -44,8 +44,8 @@ int fps;
 int qs = 1;
 bool next;
 
-bool sound;
-bool color;
+bool sound = false;
+bool color = true;
 int score;
 int topScore = 777;
 int coins;
@@ -264,6 +264,14 @@ void screencpy( int y, int x, const char *str, int draw ){
         default :   screen[ y ][ x + i ] = ch | COLOR_PAIR( WC ); break;
         }
         break;
+      case PARABENS:
+        switch( ch ){
+        case 'X':   screen[ y ][ x + i ] = ch | COLOR_PAIR( WW ); break;
+        case ':':   screen[ y ][ x + i ] = ch | COLOR_PAIR( WW ); break;
+        case ' ':                                                 break;
+        default :   screen[ y ][ x + i ] = ch | COLOR_PAIR( WC ); break;
+        }
+        break;
       case LOGO:
         switch( ch ){
         case '@':   screen[ y ][ x + i ] = ch | COLOR_PAIR( WR ); break;
@@ -274,7 +282,7 @@ void screencpy( int y, int x, const char *str, int draw ){
         break;
       case COIN:
         switch( ch ){
-        case '@':   screen[ y ][ x + i ] = ch | COLOR_PAIR( YC ) | A_BOLD ; break;
+        case '@':   screen[ y ][ x + i ] = ch | COLOR_PAIR( WY ); break;
         case ' ':   screen[ y ][ x + i ] = ch | COLOR_PAIR( CC ); break;
         case '-':                                                 break;
         }
@@ -530,7 +538,7 @@ void DrawJogador(){
     }
 
     if( gamer.y + _l >= ats.height ){
-    } else screencpy( gamer.y + _l, gamer.x - cameraX, &_mario[ tmpmariosprite ][ _l ][ 0 ], MARIO );
+    } else screencpy( gamer.y + _l + ats.initY, gamer.x - cameraX, &_mario[ tmpmariosprite ][ _l ][ 0 ], MARIO );
   }
 }
 
@@ -595,13 +603,9 @@ void DrawBlock(){
     if( block[ _k ] != -2 ){
       if( ( ( block[_k] + 15 ) >= cameraX ) && ( block[_k] <= ( cameraX + ats.width ) ) ){
         int _l = 0;
-        screencpy( blockY + _l + ats.initY, block[ _k ] - cameraX, &blockDraw[ 0 ][ 0 ], BLOCK );
-
-        for( _l = 1; _l < 6; _l++ ){
-          screencpy( blockY + _l + ats.initY, block[ _k ] - cameraX, &blockDraw[ 1 ][ 0 ], BLOCK );
+        for( _l = 0; _l < 7; _l++ ){
+          screencpy( blockY + _l + ats.initY, block[ _k ] - cameraX, &blockDraw[ _l ][ 0 ], BLOCK );
         }
-
-        screencpy( blockY + _l + ats.initY, block[ _k ] - cameraX, &blockDraw[ 0 ][ 0 ], BLOCK );
 
         if( ( block[ _k ] < ( gamer.x + gamer.width ) ) && ( ( block[ _k ] +  15) > gamer.x  ) )
           atblock = _k;
@@ -649,9 +653,16 @@ void Render(){
 
 
   int i, ii;
-  for( i = 0; i < ats.height; i++ )
-    for( ii = 0; ii < ats.width; ii++ )
-      mvaddch( i, ii, screen[ i ][ ii ] );
+  if( color ){
+    for( i = 0; i < ats.height; i++ )
+      for( ii = 0; ii < ats.width; ii++ )
+        mvaddch( i, ii, screen[ i ][ ii ] );
+  } else {
+    for( i = 0; i < ats.height; i++ )
+      for( ii = 0; ii < ats.width; ii++ )
+        mvaddch( i, ii, screen[ i ][ ii ] | A_COLOR );
+  }
+
   screenset( ' ' | COLOR_PAIR( CC ) );
   
   refresh();
@@ -659,29 +670,28 @@ void Render(){
 
 void GameWin(){
   screenGame=GAMEWIN;
-  int _y = 10;
+  int _y;
 
   screenset( ' ' | COLOR_PAIR( CC ) );
 
-  screencpy( _y++ + ats.initY, ats.initX, "      XXXXX    XXXX   XXXXX    XXXX   XXXXX   XXXXXX  XX  XX   XXXX     XX      ", DEFAULT ); 
-  screencpy( _y++ + ats.initY, ats.initX, "      XX  XX  XX  XX  XX  XX  XX  XX  XX  XX  XX      XXX XX  XX        XX      ", DEFAULT ); 
-  screencpy( _y++ + ats.initY, ats.initX, "      XXXXX   XXXXXX  XXXXX   XXXXXX  XXXXX   XXXX    XX XXX   XXXX     XX      ", DEFAULT ); 
-  screencpy( _y++ + ats.initY, ats.initX, "      XX      XX  XX  XX  XX  XX  XX  XX  XX  XX      XX  XX      XX            ", DEFAULT );
-  screencpy( _y++ + ats.initY, ats.initX, "      XX      XX  XX  XX  XX  XX  XX  XXXXX   XXXXXX  XX  XX   XXXX     XX      ", DEFAULT );   
-  screencpy( _y++ + ats.initY, ats.initX, "                                                                                ", DEFAULT );
-  screencpy( _y++ + ats.initY, ats.initX, "                                                                                ", DEFAULT );
-  screencpy( _y++ + ats.initY, ats.initX, "                                                                                ", DEFAULT );
-  screencpy( _y++ + ats.initY, ats.initX, "                   TRABALHO EM SHELL SCRIPT                                     ", DEFAULT );
-  screencpy( _y++ + ats.initY, ats.initX, "                   FATEC CARAPICUIBA                                            ", DEFAULT );
-  screencpy( _y++ + ats.initY, ats.initX, "                   DISCIPLINA LSO (LABORATORIO DE SISTEMAS OPERACIONAIS)        ", DEFAULT );
-  screencpy( _y++ + ats.initY, ats.initX, "                   PROF. RUBENS                                                 ", DEFAULT );
-  screencpy( _y++ + ats.initY, ats.initX, "                   ALUNO DORIEDSON ALVES GALDINO DE OLIVEIRA                    ", DEFAULT );
-  screencpy( _y++ + ats.initY, ats.initX, "                   ALUNO VITOR AUGUSTO ANDRIOLI                                 ", DEFAULT );
-  screencpy( _y++ + ats.initY, ats.initX, "                   ALUNO THIAGO ANDRE SILVA                                     ", DEFAULT );
-  screencpy( _y++ + ats.initY, ats.initX, "                                                                                ", DEFAULT );
-  screencpy( _y++ + ats.initY, ats.initX, "                   mod & c/ncurses version by                                   ", DEFAULT );
-  screencpy( _y++ + ats.initY, ats.initX, "                     N A S C I I B O Y                                          ", DEFAULT );
-  screencpy( _y++ + ats.initY, ats.initX, "                                                                                ", DEFAULT );
+  for( _y = 0; _y < 5; _y++ ){
+    screencpy( _y + ats.initY + 10, ats.initX + 6, &_parabens[ _y ][ 0 ], PARABENS );
+  }
+
+  screencpy( _y++ + ats.initY + 10, ats.initX, "                                                                                ", DEFAULT );
+  screencpy( _y++ + ats.initY + 10, ats.initX, "                                                                                ", DEFAULT );
+  screencpy( _y++ + ats.initY + 10, ats.initX, "                                                                                ", DEFAULT );
+  screencpy( _y++ + ats.initY + 10, ats.initX, "                   TRABALHO EM SHELL SCRIPT                                     ", DEFAULT );
+  screencpy( _y++ + ats.initY + 10, ats.initX, "                   FATEC CARAPICUIBA                                            ", DEFAULT );
+  screencpy( _y++ + ats.initY + 10, ats.initX, "                   DISCIPLINA LSO (LABORATORIO DE SISTEMAS OPERACIONAIS)        ", DEFAULT );
+  screencpy( _y++ + ats.initY + 10, ats.initX, "                   PROF. RUBENS                                                 ", DEFAULT );
+  screencpy( _y++ + ats.initY + 10, ats.initX, "                   ALUNO DORIEDSON ALVES GALDINO DE OLIVEIRA                    ", DEFAULT );
+  screencpy( _y++ + ats.initY + 10, ats.initX, "                   ALUNO VITOR AUGUSTO ANDRIOLI                                 ", DEFAULT );
+  screencpy( _y++ + ats.initY + 10, ats.initX, "                   ALUNO THIAGO ANDRE SILVA                                     ", DEFAULT );
+  screencpy( _y++ + ats.initY + 10, ats.initX, "                                                                                ", DEFAULT );
+  screencpy( _y++ + ats.initY + 10, ats.initX, "                   mod & c/ncurses version by                                   ", DEFAULT );
+  screencpy( _y++ + ats.initY + 10, ats.initX, "                     N A S C I I B O Y                                          ", DEFAULT );
+  screencpy( _y++ + ats.initY + 10, ats.initX, "                                                                                ", DEFAULT );
 
   Render();
   SLEEP(  4, 0 );
@@ -977,16 +987,16 @@ int  ColisaoBloco(){
   if( gamer.x > ( _blocoX -1 + 15 ) ){ 
     return 0;
   }
-  if( gamer.y > ( blockY -1 + 7 + ats.initY) ){
+  if( gamer.y > ( blockY -1 + 7 ) ){
     return 0;
   }
   if( ( gamer.x -1 + gamer.width ) < _blocoX ){
     return 0;
   }
-  if( ( gamer.y -1 + gamer.height ) < blockY + ats.initY ){
+  if( ( gamer.y -1 + gamer.height ) < blockY ){
     return 0;
   }
-  if( ( gamer.y - gamer.velY ) < ( blockY -1 + 7 + ats.initY) ){
+  if( ( gamer.y - gamer.velY ) < ( blockY -1 + 7) ){
     if( gamer.side == D ){
       gamer.x= _blocoX - 16;
     } else {
@@ -995,14 +1005,11 @@ int  ColisaoBloco(){
     gamer.velX=0;
     return 1;
   }
+
   Score( 50 );
   block[ atblock ]= -2;
-  gamer.y= blockY + 7 + ats.initY;
+  gamer.y= blockY + 7;
   gamer.velY=- gamer.velY;
-  int _k;
-  for( _k= blockY; _k < ( blockY+7); _k++ ){
-    facecpy( _k + ats.initY, _blocoX, _blocoClear, BLOCK );
-  }
 
   return 1;
 }
@@ -1010,7 +1017,7 @@ int  ColisaoBloco(){
 void ColisaoMastro(){
   if( ( gamer.x + gamer.width ) > 2880 ){
     screenGame=WIN;
-    flagY=gamer.y - ats.initY;
+    flagY= gamer.y;
     gamer.velY=0;
     int tmp= ( (21 - gamer.y ) * 330 ) + 50;
     sprintf( &_flagDraw[3][0], "%2s%6d%s", "X ", tmp, "   XXX" );
@@ -1024,12 +1031,12 @@ int ColisaoEnemy(){
   for( _k=0; enemyX[ _k ] != -1; _k++ ){
     if( ( enemyPathIni[_k] <  ( cameraX + ats.width ) ) && ( enemyPathFim[_k] > cameraX ) && ( enemySprite[_k] < 3 ) ){
       if( gamer.x > ( enemyX[_k] + 16 -1 ) ){
-      } else if( gamer.y > ( enemyY + 10 + ats.initY ) ){
+      } else if( gamer.y > ( enemyY + 10 ) ){
       } else if( ( gamer.x + gamer.width ) < enemyX[_k] ){
-      } else if( ( gamer.y + gamer.height ) < enemyY + ats.initY ){
-      } else if( ( gamer.y + gamer.height - gamer.velY ) < enemyY + ats.initY ){
+      } else if( ( gamer.y + gamer.height ) < enemyY ){
+      } else if( ( gamer.y + gamer.height - gamer.velY ) < enemyY ){
         Score( 100 );
-        gamer.y= enemyY - gamer.height + ats.initY;
+        gamer.y= enemyY - gamer.height;
         gamer.velY=-3;
         enemySprite[ _k ]= 3;
         enemyDead[_k]=1;
@@ -1070,13 +1077,13 @@ int ColisaoCoin(){
   if( gamer.x > ( _coinX + 10 ) ){
     return 0;
   }
-  if( gamer.y > ( coinY + 5 + ats.initY ) ){
+  if( gamer.y > ( coinY + 5 ) ){
     return 0;
   }
   if( ( gamer.x + 15 ) < _coinX  ){
     return 0;
   }
-  if( ( gamer.y + gamer.height ) < coinY + ats.initY ){
+  if( ( gamer.y + gamer.height ) < coinY ){
     return 0;
   }
 
@@ -1096,16 +1103,16 @@ void Gamer(){
       GameWin();
     break;
   case WIN:
-    if( ( gamer.velY != 0 ) || ( ( gamer.y + gamer.height ) != ( piso + ats.initY ) ) ){
+    if( ( gamer.velY != 0 ) || ( ( gamer.y + gamer.height ) != piso ) ){
       gamer.sprite=2;
       gamer.velY += gravity;
       gamer.y += gamer.velY;
       flagY = gamer.y;
 
-      if( ( gamer.y + gamer.height ) >= piso + ats.initY ){
+      if( ( gamer.y + gamer.height ) >= piso ){
         gamer.ani=0;
         gamer.sprite=0;
-        gamer.y = ats.initY + piso - gamer.height;
+        gamer.y = piso - gamer.height;
         gamer.velY=0;
       }
     } else if( gamer.x < 2927 ){
@@ -1127,7 +1134,7 @@ void Gamer(){
     if( gamer.dead == 1 ){
       gamer.velY += gravity;
       gamer.y+=gamer.velY;
-      if( gamer.y > 50 ){
+      if( gamer.y > HEIGHT ){
         if( gamer.lifes == 0 ){
           //EEP( 1, 0 );
           GameOver();
@@ -1176,16 +1183,16 @@ void Gamer(){
       gamer.sprite=0;
     }
 
-    if( gamer.velY != 0 || ( ( gamer.y + gamer.height ) != ( piso + ats.initY ) ) ){
+    if( gamer.velY != 0 || ( ( gamer.y + gamer.height ) != piso ) ){
       gamer.sprite=2;
       gamer.velY+=gravity;
       gamer.y+=gamer.velY;
-      if( ( gamer.y + gamer.height ) >= ats.initY + piso ){
+      if( ( gamer.y + gamer.height ) >= piso ){
         gamer.ani=0;
         gamer.sprite=0;
 
         if( ColisaoBuraco() == 0 ){
-          gamer.y = ats.initY + piso - gamer.height;
+          gamer.y = piso - gamer.height;
           gamer.velY = 0;
         }
       }
@@ -1285,7 +1292,7 @@ void ListenKey(){
   case KEY_UP:
     switch( screenGame ){
     case GAME:
-      if( gamer.velY == 0 && ( ( gamer.y + gamer.height ) == piso + ats.initY ) ){
+      if( gamer.velY == 0 && ( ( gamer.y + gamer.height ) == piso ) ){
         gamer.velY = -6;
       }
       break;

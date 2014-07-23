@@ -456,13 +456,17 @@ char _coinDraw[ 3 ][ 5 ][ 11 ] = {
 
 char piso1[ 11 ] = "::::XX::::";
 char piso2[ 11 ] = "X::::::::X";
+
 char _buracoDraw[] = "XX                         XX";
 
-char blockDraw[ 2 ][ 16 ] = {
+char blockDraw[ 7 ][ 16 ] = {
   { "XXXXXXXXXXXXXXX" },
-  { "X:::::::::::::X" } };
-
-char _blocoClear[] = "               ";
+  { "X:::::::::::::X" },
+  { "X:::::::::::::X" },
+  { "X:::::::::::::X" },
+  { "X:::::::::::::X" },
+  { "X:::::::::::::X" },
+  { "XXXXXXXXXXXXXXX" } };
 
 char _gameOver[ 5 ][ 78 ] = {
   { " XXXX    XXXX   XX   XX  XXXXXX           XXXX   XX  XX  XXXXXX  XXXXX     XX" },
