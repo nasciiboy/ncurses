@@ -195,6 +195,7 @@ void nasciiboy(){
   }
 
   SLEEP( 2, 0 );
+  flushinp();
 }
 
 // pone en pantalla un mensage

@@ -27,7 +27,7 @@
 enum state { MENU, QUIT, SPLASH, GAME, WIN, DEAD, WINPOINT, GAMEOVER, GAMEWIN };
 enum state screenGame;
 
-enum ckcol { MARIO, SCORE, PISO, CLOUD, MOUNT, BLOCK, CASTLE, MENUD, LOGO, HOLE, COIN, GOMPA, FLAG, GOV, PARABENS, DEFAULT };
+enum ckcol { MARIO, SCORE, PISO, CLOUD, MOUNT, BLOCK, CASTLE, MENUD, LOGO, HOLE, COIN, GOMPA, TURTLE, FLAG, GOV, PARABENS, DEFAULT };
 
 const int sizeFase = 3000;
 chtype screen[ 128 ][ 256 ];
@@ -101,8 +101,16 @@ int mount       [ 22 ];
 
 int enemyVelocX [ 10 ];
 int enemySprite [ 10 ];
-int aniEnemy    [ 10 ];
 int enemyDead   [ 10 ];
+
+int turtleX      [ 2 ];
+int turtlePathIni[ 2 ];
+int turtlePathFim[ 2 ];
+int turtleVelocX [ 1 ];
+int turtleSide   [ 1 ];
+int turtleSprite [ 1 ];
+int turtleDead   [ 1 ];
+int turtleY      = 24;
 
 int coinSprite  [ 44 ];
 
@@ -307,6 +315,16 @@ void screencpy( int y, int x, const char *str, int draw ){
         case ':':   screen[ y ][ x + i ] = ch | COLOR_PAIR( WY ); break;
         case '>':   screen[ y ][ x + i ] = ch | COLOR_PAIR( RW ); break;
         case '<':   screen[ y ][ x + i ] = ch | COLOR_PAIR( RW ); break;
+        case '-':                                                 break;
+        }
+        break;
+      case TURTLE:
+        switch( ch ){
+        case 'X':   screen[ y ][ x + i ] = ch | COLOR_PAIR( WW ); break;
+        case ' ':   screen[ y ][ x + i ] = ch | COLOR_PAIR( XR ); break;
+        case '#':   screen[ y ][ x + i ] = ch | COLOR_PAIR( YR ); break;
+        case 'T':   screen[ y ][ x + i ] = ch | COLOR_PAIR( BB ); break;
+        case '0':   screen[ y ][ x + i ] = ch | COLOR_PAIR( YY ); break;
         case '-':                                                 break;
         }
         break;
@@ -597,6 +615,18 @@ void DrawEnemy(){
   }
 }
 
+void DrawTurtle(){
+  int _k;
+  for( _k=0; turtleX[ _k ] != -1; _k++ ){
+    if( ( ( turtleX[_k] + 17 ) >= cameraX ) && ( turtleX[_k] <= ( cameraX + ats.width ) ) && ( turtleSprite[_k] < 6 ) ){
+      int _l;
+      for( _l=0; _l<13; _l++ ){
+        screencpy( _l + ats.initY + turtleY, turtleX[ _k ] - cameraX, &turtle[ turtleSprite[ _k ] ][ _l ][0 ], TURTLE );
+      }
+    }
+  }
+}
+
 void DrawBlock(){
   int _k;
   for( _k=0; block[  _k] != -1; _k++ ){
@@ -646,6 +676,7 @@ void Render(){
     DrawCoin();
     DrawEnemy();
     DrawFlag();
+    DrawTurtle();
     DrawJogador();
     break;
   default: break;
@@ -753,6 +784,18 @@ void LoadFase(){
   enemyPathFim[ i++ ] = 2480;
   enemyPathFim[ i++ ] = 2800;
   enemyPathFim[ i++ ] = -1;
+
+  i = 0;
+  turtleX[ i++ ] = 76;
+  turtleX[ i++ ] = -1;
+
+  i = 0;
+  turtlePathIni[ i++ ] = 25;
+  turtlePathIni[ i++ ] = -1;
+
+  i = 0;
+  turtlePathFim[ i++ ] = 100;
+  turtlePathFim[ i++ ] = -1;
 
   i = 0;
   coin[ i++ ] = 80;
@@ -890,9 +933,16 @@ void LoadFase(){
   for( _k=0; enemyX[_k] != -1; _k++ ){
     enemyVelocX[_k]= 1;
     enemySprite[_k]= 0;
-    aniEnemy[_k]   = 0;
     enemyDead[_k]  = 0;
   }
+
+  for( _k=0; turtleX[_k] != -1; _k++ ){
+    turtleVelocX[_k]= 2;
+    turtleSprite[_k]= 0;
+    turtleSide  [_k]= 1;
+    turtleDead[_k]  = 0;
+  }
+
 
   for( _k=0; coin[_k] != -1; _k++) coinSprite[_k] = 0;
 
@@ -1221,8 +1271,8 @@ void ChangeSpriteEnemy( int x){
   if( ( ( enemyX[_k] + 16 ) >  enemyPathFim[_k] ) || ( enemyX[_k] < enemyPathIni[_k] ) ){
     enemyVelocX[_k] = -enemyVelocX[_k];
   }
-  aniEnemy[_k]=0;
 }
+
 
 void MoveEnemy(){
   if(  screenGame  == GAME ){
@@ -1233,7 +1283,6 @@ void MoveEnemy(){
         case 0:
           ChangeSpriteEnemy( _k);
           enemySprite[_k]=1;
-          aniEnemy[_k]=1;
           break;
         case 1:
           ChangeSpriteEnemy( _k );
@@ -1245,7 +1294,6 @@ void MoveEnemy(){
           }  else {
             ChangeSpriteEnemy( _k );
             enemySprite[_k]=0;
-            aniEnemy[ _k ]=-1;
           }
           break;
         case 3:
@@ -1257,6 +1305,64 @@ void MoveEnemy(){
       }
 
     }
+  }
+}
+
+void ChangeSpriteTurtle( int x){
+  int _k = x;
+  turtleX[_k]+=turtleVelocX[_k];
+  if( ( ( turtleX[_k] + 16 ) >  turtlePathFim[_k] ) || ( turtleX[_k] < turtlePathIni[_k] ) ){
+    turtleVelocX[_k] = -turtleVelocX[_k];
+    turtleSide[_k] = -turtleSide[_k];
+  }
+}
+
+void MoveTurtle(){
+  if(  screenGame  == GAME ){
+    static int velani = 0;
+    if( velani == 1 ){
+      int _k;
+      for( _k=0; turtleX[ _k ] != -1; _k++ ){
+        if( ( turtlePathIni[_k] < ( cameraX + ats.width ) ) && ( turtlePathFim[_k] > cameraX ) && ( turtleSprite[_k] < 6 ) ){
+          switch( turtleSprite[_k] ){
+          case 0:
+            ChangeSpriteTurtle( _k);
+            if( turtleSide[_k] == -1 ){ turtleSprite[_k]=1;
+            } else turtleSprite[_k]=3;
+            break;
+          case 1:
+            ChangeSpriteTurtle( _k );
+            if( turtleSide[_k] == -1 ){ turtleSprite[ _k ] = 0;
+            } else turtleSprite[_k]= 2;
+            break;
+          case 2:
+            ChangeSpriteTurtle( _k);
+            if( turtleSide[_k] == 1 ){ turtleSprite[_k]=3;
+            } else turtleSprite[_k]=0;
+            break;
+          case 3:
+            ChangeSpriteTurtle( _k );
+            if( turtleSide[_k] == 1 ){ turtleSprite[ _k ] = 2;
+            } else turtleSprite[_k]= 1;
+            break;
+          case 4:
+            if( turtleDead[_k] == 1 ){
+              turtleSprite[_k]=6;
+            }  else {
+              ChangeSpriteTurtle( _k );
+              turtleSprite[_k]=5;
+            }
+            break;
+          case 5:
+            turtleSprite[_k]=4; break;
+          default:  break;
+          }
+        }
+
+      }
+
+      velani = 0;
+    } else velani++;
   }
 }
 
@@ -1412,6 +1518,7 @@ int main(){
     ListenKey();
     if( next ){
       MoveEnemy();
+      MoveTurtle();
       Gamer();
       Render();
     }
