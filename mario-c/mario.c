@@ -720,9 +720,7 @@ void GameWin(){
   screencpy( _y++ + ats.initY + 10, ats.initX, "                   ALUNO VITOR AUGUSTO ANDRIOLI                                 ", DEFAULT );
   screencpy( _y++ + ats.initY + 10, ats.initX, "                   ALUNO THIAGO ANDRE SILVA                                     ", DEFAULT );
   screencpy( _y++ + ats.initY + 10, ats.initX, "                                                                                ", DEFAULT );
-  screencpy( _y++ + ats.initY + 10, ats.initX, "                   mod & c/ncurses version by                                   ", DEFAULT );
-  screencpy( _y++ + ats.initY + 10, ats.initX, "                     N A S C I I B O Y                                          ", DEFAULT );
-  screencpy( _y++ + ats.initY + 10, ats.initX, "                                                                                ", DEFAULT );
+  screencpy( _y++ + ats.initY + 10, ats.initX, "                   N A S C I I B O Y MOD & C/NCURSES VERSION                    ", DEFAULT );
 
   Render();
   SLEEP(  4, 0 );
@@ -1109,6 +1107,39 @@ int ColisaoEnemy(){
   return 0;
 }
 
+int ColisaoTurtle(){
+  int _k;
+  for( _k=0; turtleX[ _k ] != -1; _k++ ){
+    if( ( turtlePathIni[_k] <  ( cameraX + ats.width ) ) && ( turtlePathFim[_k] > cameraX ) && ( turtleSprite[_k] < 4 ) ){
+      if( gamer.x > ( turtleX[_k] + 15 -1 ) ){
+      } else if( gamer.y > ( turtleY + 13 ) ){
+      } else if( ( gamer.x + gamer.width ) < turtleX[_k] ){
+      } else if( ( gamer.y + gamer.height ) < turtleY ){
+      } else if( ( gamer.y + gamer.height - gamer.velY ) < turtleY ){
+        Score( 100 );
+        gamer.y= turtleY - gamer.height;
+        gamer.velY=-3;
+        turtleSprite[ _k ]= 4;
+        turtleDead[_k]=1;
+        return 1;
+      } else {
+        Dead();
+        gamer.velY = -5;
+        gamer.sprite = 0;
+        if(gamer.side == D ){
+          gamer.x = turtleX[_k] - gamer.width;
+        } else {
+          gamer.x = turtleX[_k] + 16;
+        }
+        gamer.side=F;
+        return 1;
+      }
+    }
+ 
+  }
+  return 0;
+}
+
 void GetCoin(){
   coins++;
   Score( 200 );
@@ -1258,6 +1289,7 @@ void Gamer(){
     ColisaoBloco();
     ColisaoCoin();
     ColisaoEnemy();
+    ColisaoTurtle();
     ColisaoMastro();
   }
 
@@ -1275,7 +1307,7 @@ void ChangeSpriteEnemy( int x){
 
 
 void MoveEnemy(){
-  if(  screenGame  == GAME ){
+  if( screenGame == GAME ){
     int _k;
     for( _k=0; enemyX[ _k ] != -1; _k++ ){
       if( ( enemyPathIni[_k] < ( cameraX + ats.width ) ) && ( enemyPathFim[_k] > cameraX ) && ( enemySprite[_k] < 6 ) ){
@@ -1318,7 +1350,7 @@ void ChangeSpriteTurtle( int x){
 }
 
 void MoveTurtle(){
-  if(  screenGame  == GAME ){
+  if( screenGame == GAME ){
     static int velani = 0;
     if( velani == 1 ){
       int _k;
@@ -1346,15 +1378,15 @@ void MoveTurtle(){
             } else turtleSprite[_k]= 1;
             break;
           case 4:
-            if( turtleDead[_k] == 1 ){
-              turtleSprite[_k]=6;
-            }  else {
-              ChangeSpriteTurtle( _k );
-              turtleSprite[_k]=5;
-            }
+            turtleSprite[_k]=5;
             break;
           case 5:
-            turtleSprite[_k]=4; break;
+            turtleSprite[_k]=4;
+            break;
+          case 6:
+            turtleSprite[_k]=4;
+            turtleDead[_k] = 1;
+            break;
           default:  break;
           }
         }
